@@ -1,17 +1,19 @@
 import {randomBytes,timingSafeEqual,createHash} from 'node:crypto';
-import {stations,validateDevelopment} from './model.mjs';
+import {validateDevelopment} from './model.mjs';
 import {extractListing} from './import.mjs';
 import {fetchSource} from './sync.mjs';
 import {ConflictError,refreshPortfolio} from './netlify-store.mjs';
 const hash=x=>createHash('sha256').update(x).digest();
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
-export function createNetlifyApi({repository,password,fetchListings=fetchSource,extract=extractListing}){
+export function createNetlifyApi({repository,password,fetchListings=fetchSource,extract=extractListing,network,connections}){
  return async(request)=>{
   const url=new URL(request.url);const route=url.pathname.replace(/^\/\.netlify\/functions\/api/,'/api');const method=request.method;
   try{
    if(method==='GET'&&route==='/api/health'){await repository.read();return json({ok:true});}
    if(method==='GET'&&route==='/api/developments')return json((await repository.read()).developments);
-   if(method==='GET'&&route==='/api/stations')return json(stations);
+   if(method==='GET'&&route==='/api/transport'){try{return json(await network());}catch{return json({error:'The TfL network is temporarily unavailable.'},503);}}
+   if(method==='GET'&&route==='/api/stations'){try{return json((await network()).stations);}catch{return json({error:'The TfL station directory is temporarily unavailable.'},503);}}
+   if(method==='GET'&&route.startsWith('/api/connections/')){const id=decodeURIComponent(route.slice('/api/connections/'.length));const d=(await repository.read()).developments.find(d=>d.id===id);if(!d)return json({error:'Development not found.'},404);try{return json(await connections(d));}catch{return json({error:'Station routes are temporarily unavailable.'},503);}}
    if(!route.startsWith('/api/admin/'))return json({error:'API endpoint not found.'},404);
    if(!password||password.length<12)return json({error:'Administrator access is not configured for this deployment.'},503);
    const supplied=request.headers.get('authorization')?.replace(/^Bearer /,'')||'';

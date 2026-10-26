@@ -1,17 +1,3 @@
-export const stations = [
- {name:'Canary Wharf',lat:51.5036,lng:-0.0195,lines:'Elizabeth · Jubilee · DLR'},
- {name:'North Greenwich',lat:51.5005,lng:0.0039,lines:'Jubilee'},
- {name:'Battersea Power Station',lat:51.4796,lng:-0.142,lines:'Northern'},
- {name:'Vauxhall',lat:51.4861,lng:-0.1233,lines:'Victoria · National Rail'},
- {name:'Stratford',lat:51.5413,lng:-0.0033,lines:'Central · Jubilee · Elizabeth · DLR · Overground · National Rail'},
- {name:'Canada Water',lat:51.4981,lng:-0.0497,lines:'Jubilee · Windrush'},
- {name:'Paddington',lat:51.5154,lng:-0.1755,lines:'Elizabeth · Bakerloo · Circle · District · Hammersmith & City · National Rail'},
- {name:'White City',lat:51.512,lng:-0.2243,lines:'Central'},
- {name:'Canning Town',lat:51.5147,lng:0.0082,lines:'Jubilee · DLR'},
- {name:'Woolwich',lat:51.4916,lng:0.0718,lines:'Elizabeth'},
- {name:'Nine Elms',lat:51.4804,lng:-0.1285,lines:'Northern'},
- {name:'Greenwich',lat:51.4781,lng:-0.0149,lines:'DLR · National Rail'}
-];
 export function validateDevelopment(raw) {
  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw Error('Each development must be an object.');
  const d = {};

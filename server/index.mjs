@@ -4,7 +4,10 @@ import {randomBytes,timingSafeEqual,createHash} from 'node:crypto';
 import {mkdirSync,existsSync,readFileSync,writeFileSync} from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {samples,stations,validateDevelopment} from './model.mjs';
+import initialTransport from './data/tfl-network.json' with {type:'json'};
+import {transportService} from './transport.mjs';
+import {connectionsService} from './connections.mjs';
+import {samples,validateDevelopment} from './model.mjs';
 import {applySource,fetchSource} from './sync.mjs';
 import {extractListing} from './import.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -30,7 +33,10 @@ function admin(req,res,next){
 }
 app.get('/api/health',(_,res)=>res.json({ok:true}));
 app.get('/api/developments',(_,res)=>{res.set('Cache-Control','no-store');res.json(db.prepare('SELECT data FROM developments ORDER BY rowid').all().map(x=>JSON.parse(x.data)));});
-app.get('/api/stations',(_,res)=>res.json(stations));
+const network=transportService({seed:initialTransport});const localRouteCache=new Map();const connections=connectionsService({network,read:async key=>localRouteCache.get(key),write:async(key,value)=>{if(localRouteCache.size>500)localRouteCache.clear();localRouteCache.set(key,value);}});
+app.get('/api/transport',async(_,res)=>{try{res.json(await network());}catch{res.status(503).json({error:'The TfL network is temporarily unavailable.'});}});
+app.get('/api/stations',async(_,res)=>{try{res.json((await network()).stations);}catch{res.status(503).json({error:'The TfL station directory is temporarily unavailable.'});}});
+app.get('/api/connections/:id',async(req,res)=>{const row=db.prepare('SELECT data FROM developments WHERE id=?').get(req.params.id);if(!row)return res.status(404).json({error:'Development not found.'});try{res.json(await connections(JSON.parse(row.data)));}catch{res.status(503).json({error:'Station routes are temporarily unavailable.'});}});
 app.post('/api/admin/login',admin,(_,res)=>res.json({ok:true}));
 app.get('/api/admin/sync',admin,(_,res)=>{const row=db.prepare("SELECT value FROM metadata WHERE key='last-sync'").get();res.json(row?JSON.parse(row.value):{syncedAt:null});});
 app.post('/api/admin/sync',admin,async(_,res)=>{try{res.json(applySource(db,await fetchSource()));}catch(e){res.status(422).json({error:e.message});}});
