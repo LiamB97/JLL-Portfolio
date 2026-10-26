@@ -39,12 +39,12 @@ A fresh empty database initially contains six clearly labelled fictional collect
 
 The JLL logo and Source Sans font are sourced from the public JLL website and retained as local assets. The overall red/black/white design is provisional pending supplied brand guidelines. Development photography uses the original website image URLs; verify media use and long-term URL stability before launch.
 
-The basemap uses CARTO / OpenStreetMap, with an optional OpenRailwayMap **railway infrastructure** layer. This is not a geographically complete or TfL-branded Tube map. Nearby stations come from a small manually curated directory of major stations. Distances are straight-line approximations and are labelled accordingly. Full station coverage, accurate line overlays, walking routes and in-app commute time estimates need an appropriate TfL/routing integration and validation. Journey planning currently opens Google Maps; the destination is sent there directly and is not saved to the portfolio database.
+The basemap uses standard OpenStreetMap tiles, with an optional OpenRailwayMap **railway infrastructure** layer. This is not a geographically complete or TfL-branded Tube map. Nearby stations come from a small manually curated directory of major stations. Distances are straight-line approximations and are labelled accordingly. Full station coverage, accurate line overlays, walking routes and in-app commute time estimates need an appropriate TfL/routing integration and validation. Journey planning currently opens Google Maps; the destination is sent there directly and is not saved to the portfolio database.
 
 ## Network requirements
 
 JLL source pages: `digitalportfolio.live.jll.com`, `residential.jll.co.uk`.
-Browser map tiles: `*.basemaps.cartocdn.com`, `*.tiles.openrailwaymap.org`.
+Browser map tiles: `tile.openstreetmap.org`, `*.tiles.openrailwaymap.org`. The map opens full-screen by default; Split and List are optional header views. Nearby developments are clustered until zoomed in.
 JLL image hosting: `res.cloudinary.com`. Optional web fonts: `fonts.googleapis.com`, `fonts.gstatic.com` (system-font fallback exists).
 The Google Maps journey action opens `www.google.com` in the buyer's browser. Imported media URLs need their own source access. Review those destinations when real listing media is available.
 

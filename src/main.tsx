@@ -1,20 +1,107 @@
-import React,{useCallback,useEffect,useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {ArrowUpRight,ArrowRight,MapPin,Search,SlidersHorizontal,Map as MapIcon,LayoutGrid,X,TrainFront,ChevronLeft,ChevronRight,Check,ArrowLeft,Building2} from 'lucide-react';
+import {ArrowUpRight, ArrowRight, MapPin, Search, SlidersHorizontal, Map as MapIcon, LayoutGrid, Columns2, X, TrainFront, ChevronLeft, ChevronRight, Check, ArrowLeft, Building2, Settings} from 'lucide-react';
 import PortfolioMap from './Map';
 import Admin from './Admin';
-import {type Development,type Station,money,bedroomLabel,distance} from './types';
+import {type Development, type Station, money, bedroomLabel, distance} from './types';
 import './style.css';
-function App(){
- const [items,setItems]=useState<Development[]>([]),[stations,setStations]=useState<Station[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[query,setQuery]=useState(''),[budget,setBudget]=useState(''),[beds,setBeds]=useState(''),[type,setType]=useState(''),[selected,setSelected]=useState<string|null>(null),[view,setView]=useState('map'),[sort,setSort]=useState('curated'),[admin,setAdmin]=useState(location.hash==='#admin'),[filters,setFilters]=useState(false);
- const refresh=useCallback(async()=>{const r=await fetch('/api/developments');if(!r.ok)throw Error('Unable to load the portfolio. Please try again.');setItems(await r.json());},[]);
- useEffect(()=>{void Promise.all([refresh(),fetch('/api/stations').then(r=>{if(!r.ok)throw Error('Unable to load nearby stations.');return r.json();}).then(setStations)]).catch(e=>setError(e.message)).finally(()=>setLoading(false));const change=()=>setAdmin(location.hash==='#admin');window.addEventListener('hashchange',change);return()=>window.removeEventListener('hashchange',change);},[refresh]);
- const select=useCallback((id:string)=>setSelected(id),[]);
- const filtered=items.filter(d=>`${d.name} ${d.area} ${d.postcode}`.toLowerCase().includes(query.toLowerCase())&&(!budget||d.priceFrom<=Number(budget))&&(!beds||d.bedrooms.includes(Number(beds)))&&(!type||d.propertyTypes.includes(type))).sort((a,b)=>sort==='low'?a.priceFrom-b.priceFrom:sort==='high'?b.priceFrom-a.priceFrom:0);
- const active=items.find(d=>d.id===selected);
- const reset=()=>{setQuery('');setBudget('');setBeds('');setType('');};
- return <><header className="header"><a className="brand" href="#" aria-label="JLL Residential home"><img className="official-logo" src="/images/jll-logo.svg" alt="JLL"/><span className="brand-divider"/><span className="brand-sub">RESIDENTIAL<br/><strong>London new homes</strong></span></a><nav><span className="nav-current">The portfolio</span><a href="#about">Made for your next move <ArrowUpRight size={14}/></a></nav><span className="header-location"><MapPin size={14}/> LONDON, UK</span></header>{admin?<Admin items={items} onChange={refresh}/>:<><section className="hero"><div><p className="eyebrow"><span/> A NEW PERSPECTIVE ON LONDON LIVING</p><h1>Find your place.<br/><em>Make it London.</em></h1><p className="hero-copy">Extraordinary homes. Exceptional neighbourhoods.<br/>Explore our collection of new homes across the capital.</p></div><div className="hero-right"><span className="edition">THE LONDON COLLECTION <span>01 /</span></span><div className="hero-stat"><span>{String(items.length).padStart(2,'0')}</span><p>developments.<br/>One incredible city.</p></div><span className="curated">Selected by JLL Residential <ArrowUpRight size={18}/></span></div></section><section className="browse" aria-label="Browse developments"><div className="search-bar"><label className="search-input"><Search size={19}/><input aria-label="Search by area, development or postcode" placeholder="Where in London? Area, development or postcode" value={query} onChange={e=>setQuery(e.target.value)}/>{query&&<button aria-label="Clear search" onClick={()=>setQuery('')}><X size={16}/></button>}</label><label className="filter-select"><span>PRICE RANGE</span><select aria-label="Maximum price" value={budget} onChange={e=>setBudget(e.target.value)}><option value="">Any price</option>{[500000,750000,1000000,1500000,2000000].map(p=><option key={p} value={p}>Up to {money(p)}</option>)}</select></label><label className="filter-select"><span>BEDROOMS</span><select aria-label="Bedrooms" value={beds} onChange={e=>setBeds(e.target.value)}><option value="">Any bedrooms</option><option value="0">Studio</option>{[1,2,3,4].map(n=><option key={n} value={n}>{n} bedrooms</option>)}</select></label><button className={'more-filter '+(filters?'on':'')} onClick={()=>setFilters(!filters)}><SlidersHorizontal size={17}/><span>Filters</span>{type&&<i/>}</button></div>{filters&&<div className="extra-filters"><label>Property type <select value={type} onChange={e=>setType(e.target.value)}><option value="">All types</option>{Array.from(new Set(items.flatMap(x=>x.propertyTypes))).map(t=><option key={t}>{t}</option>)}</select></label><button onClick={reset}>Reset all filters</button></div>}<div className="results-bar"><div><strong>{filtered.length} developments</strong><span> to call home</span></div><div className="results-actions"><label className="sort">Sort by <select aria-label="Sort developments" value={sort} onChange={e=>setSort(e.target.value)}><option value="curated">Our collection</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option></select></label><div className="view-toggle"><button className={view==='map'?'chosen':''} onClick={()=>setView('map')}><MapIcon size={15}/> Map</button><button className={view==='list'?'chosen':''} onClick={()=>setView('list')}><LayoutGrid size={15}/> List</button></div></div></div>{items.some(d=>d.sample)&&<div className="sample-banner"><span className="sample-dot"/> Preview collection · Illustrative developments and prices, not live JLL stock.</div>}{items.length>0&&!items.some(d=>d.sample)&&<div className="sample-banner">JLL website collection · Prices and availability are subject to confirmation with your broker.</div>}{error&&<div className="error" role="alert">{error}<button onClick={()=>{setError('');void refresh().catch(e=>setError(e.message));}}>Retry</button></div>}<div className={'workspace '+(view==='list'?'list-view':'')}><div className="cards-panel">{loading?<p className="empty-state">Loading your London collection…</p>:!filtered.length?<div className="empty-state"><Building2 size={32}/><h2>No homes found</h2><p>Try a different area or broaden your price range.</p><button onClick={reset}>Reset filters</button></div>:<div className="cards">{filtered.map(d=><button className={'property-card '+(selected===d.id?'selected':'')} key={d.id} onClick={()=>setSelected(d.id)}><div className="card-image"><img src={d.images[0]||'/images/city.svg'} alt={d.sample?'Architectural illustration':d.name} loading="lazy" onError={e=>{e.currentTarget.onerror=null;e.currentTarget.src='/images/city.svg';}}/><span className="card-tag">{d.sample?'SAMPLE COLLECTION':d.status.toUpperCase()}</span><span className="card-arrow"><ArrowUpRight size={18}/></span></div><div className="card-body"><p className="card-area"><MapPin size={12}/>{d.area} <span>· {d.postcode}</span></p><h2>{d.name}</h2><p className="card-beds">{bedroomLabel(d.bedrooms)} bedrooms <span>·</span> {d.propertyTypes.join(' & ')}</p><div className="card-bottom"><span>Prices from <strong>{money(d.priceFrom)}</strong></span><span className="explore">Explore <ArrowRight size={14}/></span></div></div></button>)}</div>}</div>{view==='map'&&<PortfolioMap items={filtered} selected={selected} onSelect={select} stations={stations}/>}</div></section><section className="about" id="about"><p className="eyebrow">LOCAL KNOWLEDGE. GLOBAL PERSPECTIVE.</p><h2>A city of possibilities.<br/>A home that feels like you.</h2><p>Discover the neighbourhoods, connections and details that make each home unique. When something catches your eye, speak to the JLL broker who shared this portfolio with you.</p></section></>}<footer><span>© {new Date().getFullYear()} JLL Residential</span><span>London living, thoughtfully selected.</span><a href="#admin">Manage portfolio <ArrowUpRight size={12}/></a></footer>{active&&!admin&&<Detail key={active.id} d={active} stations={stations} close={()=>setSelected(null)}/>}</>;
+
+type View = 'map' | 'split' | 'list';
+function App() {
+  const [items, setItems] = useState<Development[]>([]);
+  const [stations, setStations] = useState<Station[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [query, setQuery] = useState('');
+  const [budget, setBudget] = useState('');
+  const [beds, setBeds] = useState('');
+  const [type, setType] = useState('');
+  const [selected, setSelected] = useState<string | null>(null);
+  const [view, setView] = useState<View>('map');
+  const [sort, setSort] = useState('curated');
+  const [admin, setAdmin] = useState(location.hash === '#admin');
+  const [filters, setFilters] = useState(false);
+  const refresh = useCallback(async () => {
+    const response = await fetch('/api/developments');
+    if (!response.ok) throw Error('Unable to load the portfolio. Please try again.');
+    setItems(await response.json());
+  }, []);
+  useEffect(() => {
+    void Promise.all([
+      refresh(),
+      fetch('/api/stations').then(response => {
+        if (!response.ok) throw Error('Unable to load nearby stations.');
+        return response.json();
+      }).then(setStations),
+    ]).catch(e => setError(e.message)).finally(() => setLoading(false));
+    const change = () => setAdmin(location.hash === '#admin');
+    window.addEventListener('hashchange', change);
+    return () => window.removeEventListener('hashchange', change);
+  }, [refresh]);
+  const select = useCallback((id: string) => setSelected(id), []);
+  const filtered = items.filter(d =>
+    `${d.name} ${d.area} ${d.postcode}`.toLowerCase().includes(query.toLowerCase()) &&
+    (!budget || d.priceFrom <= Number(budget)) &&
+    (!beds || d.bedrooms.includes(Number(beds))) &&
+    (!type || d.propertyTypes.includes(type))
+  ).sort((a, b) => sort === 'low' ? a.priceFrom - b.priceFrom : sort === 'high' ? b.priceFrom - a.priceFrom : 0);
+  const active = items.find(d => d.id === selected);
+  const filterCount = [budget, beds, type].filter(Boolean).length;
+  const reset = () => { setQuery(''); setBudget(''); setBeds(''); setType(''); };
+
+  return <div className={`portfolio-app ${admin ? 'admin-active' : 'explorer-active'}`}>
+    <header className="explorer-header">
+      <a className="brand" href="#" aria-label="JLL Residential home">
+        <img className="official-logo" src="/images/jll-logo.svg" alt="JLL"/>
+        <span className="brand-divider"/>
+        <span className="brand-sub">RESIDENTIAL<br/><strong>London new homes</strong></span>
+      </a>
+      {!admin && <div className="explorer-view-toggle" role="group" aria-label="Portfolio view">
+        {([{value:'map', label:'Map', icon:MapIcon}, {value:'split', label:'Split', icon:Columns2}, {value:'list', label:'List', icon:LayoutGrid}] as const).map(({value, label, icon:Icon}) =>
+          <button key={value} aria-pressed={view === value} className={view === value ? 'chosen' : ''} onClick={() => setView(value)}><Icon size={16}/><span>{label}</span></button>
+        )}
+      </div>}
+      <a className="manage-link" href="#admin" aria-label="Manage portfolio" title="Manage portfolio"><Settings size={17}/><span>Manage</span></a>
+    </header>
+    {admin ? <Admin items={items} onChange={refresh}/> : <main className={`map-explorer view-${view}`} aria-label="London development explorer">
+      <div className="explorer-tools">
+        <div className="explorer-search">
+          <Search size={18}/>
+          <input aria-label="Search by area, development or postcode" placeholder="Search an area, development or postcode" value={query} onChange={e => setQuery(e.target.value)}/>
+          {query && <button className="clear-search" aria-label="Clear search" onClick={() => setQuery('')}><X size={15}/></button>}
+          <button className={`explorer-filter-button ${filterCount ? 'filtered' : ''}`} aria-expanded={filters} aria-controls="explorer-filter-panel" onClick={() => setFilters(!filters)}><SlidersHorizontal size={16}/><span>Filters</span>{filterCount > 0 && <b>{filterCount}</b>}</button>
+        </div>
+        {filters && <section id="explorer-filter-panel" className="explorer-filter-panel" aria-label="Filter developments">
+          <div className="filter-panel-heading"><strong>Find your London home</strong><button aria-label="Close filters" onClick={() => setFilters(false)}><X size={16}/></button></div>
+          <div className="explorer-filter-fields">
+            <label>Maximum price<select aria-label="Maximum price" value={budget} onChange={e => setBudget(e.target.value)}><option value="">Any price</option>{[500000,750000,1000000,1500000,2000000].map(p => <option key={p} value={p}>Up to {money(p)}</option>)}</select></label>
+            <label>Bedrooms<select aria-label="Bedrooms" value={beds} onChange={e => setBeds(e.target.value)}><option value="">Any bedrooms</option><option value="0">Studio</option>{[1,2,3,4].map(n => <option key={n} value={n}>{n} bedrooms</option>)}</select></label>
+            <label>Property type<select aria-label="Property type" value={type} onChange={e => setType(e.target.value)}><option value="">All types</option>{Array.from(new Set(items.flatMap(d => d.propertyTypes))).map(t => <option key={t}>{t}</option>)}</select></label>
+          </div>
+          <div className="filter-panel-actions"><button onClick={reset}>Reset filters</button><button className="primary" onClick={() => setFilters(false)}>Show {filtered.length} developments</button></div>
+        </section>}
+        <div className="explorer-result-count" role="status" aria-live="polite">{loading ? 'Loading London homes…' : <><span className="collection-dot"/><strong>{filtered.length} developments</strong><span>across London</span>{(query || filterCount > 0) && <button onClick={reset}>Clear all</button>}</>}</div>
+        {error && <div className="explorer-message" role="alert">{error}<button onClick={() => { setError(''); void refresh().catch(e => setError(e.message)); }}>Retry</button></div>}
+        {!loading && !filtered.length && !error && view === 'map' && <div className="explorer-message"><Building2 size={20}/><div><strong>No homes found</strong><p>Try a different area or broaden your filters.</p></div><button onClick={reset}>Reset</button></div>}
+      </div>
+      <div className="explorer-workspace">
+        {view !== 'list' && <PortfolioMap items={filtered} selected={selected} onSelect={select} stations={stations}/>}
+        {view !== 'map' && <section className="explorer-list" aria-label="Development listings">
+          <div className="listing-heading"><h1>London collection</h1><label>Sort by<select aria-label="Sort developments" value={sort} onChange={e => setSort(e.target.value)}><option value="curated">Our collection</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option></select></label></div>
+          {loading ? <p className="empty-state">Loading your London collection…</p> : !filtered.length ? <div className="empty-state"><Building2 size={30}/><h2>No homes found</h2><p>Try a different area or broaden your price range.</p><button onClick={reset}>Reset filters</button></div> : <div className="cards">
+            {filtered.map(d => <button className={`property-card ${selected === d.id ? 'selected' : ''}`} key={d.id} onClick={() => setSelected(d.id)}>
+              <div className="card-image"><img src={d.images[0] || '/images/city.svg'} alt={d.sample ? 'Architectural illustration' : d.name} loading="lazy" onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/city.svg'; }}/><span className="card-tag">{d.sample ? 'SAMPLE COLLECTION' : d.status.toUpperCase()}</span><span className="card-arrow"><ArrowUpRight size={18}/></span></div>
+              <div className="card-body"><p className="card-area"><MapPin size={12}/>{d.area}<span>· {d.postcode}</span></p><h2>{d.name}</h2><p className="card-beds">{bedroomLabel(d.bedrooms)} bedrooms <span>·</span> {d.propertyTypes.join(' & ')}</p><div className="card-bottom"><span>Prices from <strong>{money(d.priceFrom)}</strong></span><span className="explore">Explore <ArrowRight size={14}/></span></div></div>
+            </button>)}
+          </div>}
+        </section>}
+      </div>
+      <div className="explorer-disclaimer">{items.some(d => d.sample) ? 'Preview collection · Illustrative stock and prices' : 'Prices & availability subject to broker confirmation'}</div>
+    </main>}
+    {active && !admin && <Detail key={active.id} d={active} stations={stations} close={() => setSelected(null)}/>}
+  </div>;
 }
+
 function Detail({d,stations,close}:{d:Development;stations:Station[];close:()=>void}){
  const [photo,setPhoto]=useState(0),[destination,setDestination]=useState(''),[mode,setMode]=useState('transit');
  useEffect(()=>{const old=document.body.style.overflow;document.body.style.overflow='hidden';const previous=document.activeElement as HTMLElement|null;const dialog=document.getElementById('development-dialog');dialog?.focus();const key=(e:KeyboardEvent)=>{if(e.key==='Escape')close();if(e.key==='Tab'&&dialog){const nodes=Array.from(dialog.querySelectorAll<HTMLElement>('button,a[href],input,select,video'));const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&(document.activeElement===first||document.activeElement===dialog)){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}};document.addEventListener('keydown',key);return()=>{document.body.style.overflow=old;document.removeEventListener('keydown',key);previous?.focus();};},[]);
