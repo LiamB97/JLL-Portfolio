@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {validateDevelopment,samples,distanceKm,stations} from './model.mjs';
+import {parseListing,extractListing} from './import.mjs';
+test('every illustrative development meets the London publishing schema',()=>{assert.equal(samples.length,6);for(const d of samples){assert.equal(validateDevelopment(d).name,d.name);assert.equal(d.sample,true);}});
+test('invalid coordinates, prices, media and bedroom data are rejected',()=>{for(const patch of [{lat:53},{lng:1},{priceFrom:-1},{priceFrom:'500000'},{images:['javascript:alert(1)']},{videos:['http://example.com/video.mp4']},{bedrooms:[-1]},{propertyTypes:[]}])assert.throws(()=>validateDevelopment({...samples[0],...patch}));});
+test('import source cannot target another host or use credentials',async()=>{for(const url of ['https://example.com/','http://residential.jll.co.uk/','https://user:pass@residential.jll.co.uk/','https://residential.jll.co.uk:444/'])await assert.rejects(extractListing(url),/Only HTTPS/);});
+test('structured listing import extracts fields without inventing missing information',()=>{const d=parseListing('<script type="application/ld+json">{"@graph":[{"@type":"ApartmentComplex","name":"A real listing","geo":{"latitude":51.5,"longitude":-0.1},"image":["/one.jpg"],"offers":{"price":650000},"address":{"postalCode":"E14","addressLocality":"London"}}]}</script>','https://residential.jll.co.uk/development');assert.equal(d.name,'A real listing');assert.equal(d.priceFrom,650000);assert.equal(d.images[0],'https://residential.jll.co.uk/one.jpg');assert.deepEqual(d.bedrooms,[]);assert.equal(d.sample,false);});
+test('missing structured data remains incomplete for manual review',()=>{const d=parseListing('<title>JLL</title>','https://residential.jll.co.uk/');assert.equal(d.lat,null);assert.equal(d.priceFrom,null);assert.throws(()=>validateDevelopment(d));});
+test('distance calculation returns zero and plausible London distance',()=>{assert.equal(distanceKm(stations[0],stations[0]),0);assert.ok(distanceKm(stations[0],stations[6])>9);assert.ok(distanceKm(stations[0],stations[6])<13);});
