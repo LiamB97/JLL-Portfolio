@@ -22,6 +22,7 @@ export function cleanListingText(value,brands=[]){
 }
 export function parseListing(html,url){
  const $=cheerio.load(html),nodes=[];
+ if(/_Incapsula_Resource|challenge-platform|cf-chl-|<title>\s*(?:just a moment|access denied)/i.test(html))throw Error('This website blocks automated imports. Open the page in your browser and use Paste the listing text below.');
  let embedded;try{embedded=JSON.parse($('#__NEXT_DATA__').text()).props?.pageProps?.property;}catch{}
  if(new URL(url).hostname==='residential.jll.co.uk'&&embedded?.title){
   const p=embedded,plain=x=>cheerio.load(String(x||'').replace(/<br\s*\/?>/gi,'\n')).text().trim();
@@ -52,6 +53,7 @@ export function parseListing(html,url){
  if(paragraphs.join(' ').length>description.length)description=[...new Set(paragraphs)].join('\n\n').slice(0,6000);
  const bullets=[];content('[class*="feature"] li,[class*="amenit"] li,[class*="highlight"] li,[class*="key-point"] li,[class*="feature"] p,[class*="amenit"] h3,[class*="feature"] h3,[itemprop="amenityFeature"]').each((_,el)=>{const value=cleanListingText(content(el).text(),brands);if(value.length>=3&&value.length<=180)bullets.push(value);});
  content('h2,h3').each((_,el)=>{if(/^(?:key )?features|amenities|highlights/i.test(content(el).text().trim()))content(el).nextAll('ul').first().find('li').each((_,li)=>{const value=cleanListingText(content(li).text(),brands);if(value.length>=3&&value.length<=180)bullets.push(value);});});
+ content('h3,h4,h5,h6,p').each((_,el)=>{const value=cleanListingText(content(el).text(),brands);if(value.length>=4&&value.length<=180&&/\b(?:concierge|residents.? lounge|residents.? gym|fitness suite|swimming pool|roof terrace|rooftop garden|co-working|gated community|landscaped gardens)\b/i.test(value))bullets.push(value);});
  features=[...new Set([...features,...bullets])].slice(0,30);
  const candidates=[];$('img,source,a[href]').each((_,el)=>{const image=$(el),src=image.attr('data-src')||image.attr('data-lazy-src')||image.attr('data-srcset')?.split(',').at(-1)?.trim().split(' ')[0]||image.attr('srcset')?.split(',').at(-1)?.trim().split(' ')[0]||image.attr('src')||(/\.(?:jpg|jpeg|png|webp)(?:\?|$)/i.test(image.attr('href')||'')?image.attr('href'):'');if(brands.some(b=>String(image.attr('alt')||'').trim().toLowerCase()===b.trim().toLowerCase()))return;const context=[src,image.attr('alt'),image.attr('class'),image.parents().slice(0,3).map((_,p)=>$(p).attr('class')||'').get().join(' ')].join(' ');if(!src||/logo|icon|sprite|avatar|agent|broker|badge|arrow|award|map[-_]|floor[-_ ]?plan|favicon|svg|tracking|pixel|finance|partner/i.test(context))return;const w=Number(image.attr('width'));if(w&&w<250)return;const full=media(src)[0];if(full)candidates.push({url:full,score:/gallery|hero|banner|apartment|bedroom|kitchen|exterior|interior|living|development|residence|amenit/i.test(context)?2:1});});
  $('[style],[data-bg],[data-background]').each((_,el)=>{const node=$(el),context=node.attr('class')||'';if(/logo|icon|footer|partner/i.test(context))return;const src=node.attr('data-bg')||node.attr('data-background')||node.attr('style')?.match(/url\(['"]?([^'")]+)['"]?\)/)?.[1];if(src){const full=media(src)[0];if(full)candidates.push({url:full,score:/gallery|hero|banner|slide/i.test(context)?2:1});}});
@@ -61,26 +63,35 @@ export function parseListing(html,url){
  const postcode=typeof address==='object'?address.postalCode||allText.match(/\b(?:GIR 0AA|[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i)?.[0]?.toUpperCase()||'':'';
  const priceText=allText.match(/(?:prices?\s+(?:start(?:ing)?\s+)?from|from)\s*£\s*([\d,]+(?:\.\d+)?)\s*(million|m\b|k\b)?/i);
  const priceFallback=priceText?Math.round(Number(priceText[1].replaceAll(',',''))*(/^m/i.test(priceText[2]||'')?1000000:/^k/i.test(priceText[2]||'')?1000:1)):null;
+ if(!name&&!description&&!images.length)throw Error('No readable listing content was found. This page may require browser access. Use Paste the listing text to prepare a draft instead.');
  const bedMatch=allText.match(/\b(\d)\s*(?:,\s*(\d)\s*)?(?:(?:&|and|to|–|-)\s*(\d)\s*)?(?:bedroom|bed)[ -]*(?:apartments?|homes?|residences?)/i);
  const fallbackBeds=bedMatch?[...new Set(bedMatch.slice(1).filter(Boolean).map(Number))]:[];
- return {name,area:typeof address==='object'?address.addressLocality||'':'',postcode,description,lat:coordinate(geo.latitude??$('meta[property="place:location:latitude"]').attr('content')),lng:coordinate(geo.longitude??$('meta[property="place:location:longitude"]').attr('content')),priceFrom:offers.priceCurrency&&offers.priceCurrency!=='GBP'?null:numeric(offers.lowPrice||offers.price)||priceFallback,bedrooms:bedroom!==undefined&&Number.isInteger(Number(bedroom))?[Number(bedroom)]:fallbackBeds,propertyTypes:hasType(property,['Apartment','ApartmentComplex'])?['Apartments']:hasType(property,['House','SingleFamilyResidence'])?['Houses']:/\bapartments?\b/i.test(description)?['Apartments']:[],amenities:features,images,videos:media(property.video),status:'Available',sample:false,sourceUrl:new URL(url).hostname==='residential.jll.co.uk'?url:'',importSource:url,_requiresReview:true,_diagnostics:{schemaTypes:nodes.flatMap(x=>[].concat(x['@type']||[])).slice(0,20),scriptIds:$('script[id]').map((_,s)=>$(s).attr('id')).get().slice(0,10),headings:$('main h1,main h2,main h3,h1').map((_,h)=>$(h).text().trim().slice(0,120)).get().slice(0,16),candidateImages:candidates.length,paragraphs:paragraphs.length}};
+ return {name,area:typeof address==='object'?address.addressLocality||'':'',postcode,description,lat:coordinate(geo.latitude??$('meta[property="place:location:latitude"]').attr('content')),lng:coordinate(geo.longitude??$('meta[property="place:location:longitude"]').attr('content')),priceFrom:offers.priceCurrency&&offers.priceCurrency!=='GBP'?null:numeric(offers.lowPrice||offers.price)||priceFallback,bedrooms:bedroom!==undefined&&Number.isInteger(Number(bedroom))?[Number(bedroom)]:fallbackBeds,propertyTypes:hasType(property,['Apartment','ApartmentComplex'])?['Apartments']:hasType(property,['House','SingleFamilyResidence'])?['Houses']:/\bapartments?\b/i.test(description)?['Apartments']:[],amenities:features,images,videos:media(property.video),status:'Available',sample:false,sourceUrl:new URL(url).hostname==='residential.jll.co.uk'?url:'',importSource:url,_requiresReview:true,_diagnostics:{schemaTypes:nodes.flatMap(x=>[].concat(x['@type']||[])).slice(0,20),scriptIds:$('script[id]').map((_,s)=>$(s).attr('id')).get().slice(0,10),headings:$('main h1,main h2,main h3,h1').map((_,h)=>$(h).text().trim().slice(0,120)).get().slice(0,16),candidateImages:candidates.length,paragraphs:paragraphs.length,contentLinks:$('a[href]').map((_,a)=>{try{const target=new URL($(a).attr('href'),url);return target.origin===new URL(url).origin&&/apartments?|homes?|amenit|residents?|lifestyle|location|gallery|specification/i.test(target.pathname)&&!/privacy|terms|contact|register|news|blog/i.test(target.pathname)?target.pathname:null;}catch{return null;}}).get().filter(Boolean).slice(0,12)}};
 }
-export async function extractListing(value,{resolve=lookup,fetcher=fetch}={}){
+export async function extractListing(value,{resolve=lookup,fetcher=fetch,supplement=true,deadline=Date.now()+25000}={}){
  let target=value;
  for(let redirects=0;redirects<=3;redirects++){
+  if(Date.now()>=deadline)throw Error('The source took too long to respond. Use Paste the listing text instead.');
   const {url,addresses}=await listingTarget(target,resolve);
   // Pin direct production DNS to the validated addresses. An environment's outbound
   // proxy, when configured, handles its own DNS and network access policy.
   const proxy=process.env.HTTPS_PROXY||process.env.https_proxy;
   const dispatcher=proxy?new EnvHttpProxyAgent():new Agent({connect:{lookup:(host,options,callback)=>{if(host!==url.hostname)return callback(Error('Unexpected import host.'));callback(null,options.all?addresses:addresses[0].address,addresses[0].family);}}});
   try{
-   const response=await fetcher(url,{dispatcher,redirect:'manual',signal:AbortSignal.timeout(15000),headers:{'User-Agent':'JLL-Portfolio/0.1 (https://subtle-malabi-144145.netlify.app/)','Accept':'text/html'}});
+   const response=await fetcher(url,{dispatcher,redirect:'manual',signal:AbortSignal.timeout(Math.max(1,Math.min(15000,deadline-Date.now()))),headers:{'User-Agent':'JLL-Portfolio/0.1 (https://subtle-malabi-144145.netlify.app/)','Accept':'text/html'}});
    if([301,302,303,307,308].includes(response.status)){await response.body?.cancel();const next=response.headers.get('location');if(!next||redirects===3)throw Error('Too many website redirects. Paste the final development page URL.');target=new URL(next,url).href;continue;}
    if(!response.ok){await response.body?.cancel();throw Error(`The website returned ${response.status}. It may block imports; use the manual form instead.`);}
    if(!response.headers.get('content-type')?.includes('text/html')){await response.body?.cancel();throw Error('The source must be an HTML development page.');}
    const reader=response.body.getReader();let size=0;const chunks=[];
    while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>3_000_000){await reader.cancel();throw Error('Source page exceeds the 3MB import limit.');}chunks.push(Buffer.from(value));}
-   return parseListing(Buffer.concat(chunks).toString('utf8'),url.href);
+   const draft=parseListing(Buffer.concat(chunks).toString('utf8'),url.href);
+   if(supplement&&url.hostname==='angelvillage.co.uk'&&url.pathname==='/'){
+    const paths=[...new Set(draft._diagnostics?.contentLinks||[])].sort((a,b)=>Number(/amenit|resident|lifestyle/i.test(b))-Number(/amenit|resident|lifestyle/i.test(a))).slice(0,2);
+    const extra=await Promise.all(paths.map(p=>extractListing(new URL(p,url).href,{resolve,fetcher,supplement:false,deadline}).catch(()=>null)));
+    for(const d of extra){if(!d||new URL(d.importSource).origin!==url.origin)continue;for(const k of ['postcode','lat','lng','priceFrom','area'])if(draft[k]===null||draft[k]==='')draft[k]=d[k];for(const k of ['images','videos','amenities','bedrooms','propertyTypes'])draft[k]=[...new Set([...draft[k],...d[k]])].slice(0,30);if(d.description&&!draft.description.includes(d.description))draft.description=(draft.description+'\n\n'+d.description).slice(0,6000);}
+    draft._supplementaryPages=paths;
+   }
+   return draft;
   }finally{await dispatcher.close();}
  }
 }

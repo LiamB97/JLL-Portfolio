@@ -1,4 +1,5 @@
 import {translations as defaultTranslations} from './translations.mjs';
+import {importForReview} from './review-import.mjs';
 import {postcodeLocation} from './location.mjs';
 import {parsePastedListing} from './pasted-import.mjs';
 import {rejectDuplicate} from './duplicates.mjs';
@@ -58,7 +59,7 @@ export function createNetlifyApi({repository,password,fetchListings=fetchSource,
    if(method==='PUT'&&route.startsWith('/api/admin/collections/'))return json(await access.saveCollection(actor,body,decodeURIComponent(route.slice('/api/admin/collections/'.length))));
    if(method==='POST'&&route==='/api/admin/location'){access.stock(actor);try{return json(await postcodeLocation(body.postcode));}catch(e){return json({error:e.message},422);}}
    if(method==='POST'&&route==='/api/admin/parse-text'){access.stock(actor);try{return json({development:parsePastedListing(body.text,body.url||undefined),warning:'Text loaded as an unpublished draft. Complete missing fields and review all details before publishing.'});}catch(e){return json({error:e.message},422);}}
-   if(method==='POST'&&route==='/api/admin/extract'){access.stock(actor);try{return json({development:await extract(body?.url),warning:'Unpublished draft. Check every field and photo; remove third-party branding, contact details and sales language before publishing.'});}catch(e){return json({error:e.message},422);}}
+   if(method==='POST'&&route==='/api/admin/extract'){access.stock(actor);try{return json(await importForReview(body?.url,(await repository.read()).developments,{extract,fetchListings}));}catch(e){return json({error:e.message},422);}}
    if(method==='POST'&&route==='/api/admin/import'){
     access.stock(actor);const rows=body?.developments;if(!Array.isArray(rows)||!rows.length||rows.length>200)throw Error('Import 1–200 developments at a time.');
     const items=rows.map((raw,i)=>{try{return {...reviewedDevelopment(raw),id:randomBytes(12).toString('hex'),createdBy:actor.id};}catch(e){throw new AccessError(`Row ${i+1}: ${e.message}`);}});
