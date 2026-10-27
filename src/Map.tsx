@@ -25,7 +25,7 @@ function stationPopup(station:TransportNetwork['stations'][number], network:Tran
   }
   return popup;
 }
-export default function PortfolioMap({items, selected, onSelect, network, transportError,featuredIds=[]}:{items:Development[];selected:string|null;onSelect:(id:string)=>void;network:TransportNetwork|null;transportError:string;featuredIds?:string[]}) {
+export default function PortfolioMap({items, selected, onSelect, network, transportError,featuredIds=[],favouriteIds=[],favouritesOnly=false}:{items:Development[];selected:string|null;onSelect:(id:string)=>void;network:TransportNetwork|null;transportError:string;featuredIds?:string[];favouriteIds?:string[];favouritesOnly?:boolean}) {
   const {t,dark}=useLocale();
   const lastView=useRef<{centre:L.LatLngExpression;zoom:number}>({centre:[51.505,-.085],zoom:11});
   const el=useRef<HTMLDivElement>(null), map=useRef<L.Map|null>(null);
@@ -61,20 +61,26 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
     markers.current=L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:40,spiderfyOnMaxZoom:true,iconCreateFunction:cluster=>L.divIcon({html:`<span>${cluster.getChildCount()}</span>`,className:'development-cluster',iconSize:[42,42]})}).addTo(m);
     lines.current=L.layerGroup().addTo(m);stationLayer.current=L.layerGroup().addTo(m);featuredLayer.current=L.layerGroup().addTo(m);
     const resize=new ResizeObserver(()=>m.invalidateSize({pan:false}));resize.observe(el.current);
-    return()=>{window.clearTimeout(styleTimeout);resize.disconnect();lastView.current={centre:m.getCenter(),zoom:m.getZoom()};m.remove();map.current=null;};
+    return()=>{window.clearTimeout(styleTimeout);resize.disconnect();m.stop();
+      // Leaflet 1.9 leaves its CSS zoom-completion timeout pending after remove().
+      // End that animation before removing the pane so a theme/view switch is safe.
+      (m as L.Map & {_animatingZoom?:boolean})._animatingZoom=false;
+      lastView.current={centre:m.getCenter(),zoom:m.getZoom()};m.remove();map.current=null;};
   },[dark]);
   useEffect(()=>{
     const group=markers.current,featured=featuredLayer.current;if(!group||!featured)return;group.clearLayers();featured.clearLayers();
     for(const d of items){
-      const highlighted=featuredIds.includes(d.id);
-      const icon=L.divIcon({className:'development-pin-wrap',html:`<span class="development-pin ${d.id===selected?'active':''} ${highlighted?'featured-pin':''}"><span class="pin-centre"></span></span>`,iconSize:[34,40],iconAnchor:[17,38]});
-      const marker=L.marker([d.lat,d.lng],{icon,keyboard:true,title:d.name+(highlighted?' · Featured':''),zIndexOffset:highlighted?2000:d.id===selected?1000:0});
-      marker.on('add',()=>marker.getElement()?.setAttribute('aria-label',`View ${d.name}${highlighted?', featured':''}`)).on('click',()=>onSelect(d.id)).addTo(highlighted?featured:group);
+      const highlighted=featuredIds.includes(d.id),saved=favouriteIds.includes(d.id);
+      const icon=L.divIcon({className:'development-pin-wrap',html:`<span class="development-pin ${d.id===selected?'active':''} ${highlighted?'featured-pin':''} ${saved?'favourite-pin':''}">${saved?'<svg class="pin-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>':'<span class="pin-centre"></span>'}</span>`,iconSize:[34,40],iconAnchor:[17,38]});
+      const marker=L.marker([d.lat,d.lng],{icon,keyboard:true,title:d.name+(highlighted?' · '+t('FEATURED'):'')+(saved?' · '+t('Saved to favourites'):''),zIndexOffset:d.id===selected?3000:highlighted?2000:saved?1000:0});
+      marker.on('add',()=>marker.getElement()?.setAttribute('aria-label',`${d.name}${highlighted?', '+t('FEATURED'):''}${saved?', '+t('Saved to favourites'):''}`)).on('click',()=>onSelect(d.id)).addTo(highlighted||saved?featured:group);
     }
-  },[items,selected,onSelect,featuredIds,dark]);
+  },[items,selected,onSelect,featuredIds,favouriteIds,dark,t]);
   useEffect(()=>{const m=map.current,group=landmarkLayer.current;if(!m||!group)return;function render(){group!.clearLayers();if(!showLandmarks||m!.getZoom()<12)return;for(const place of landmarks){const label=document.createElement('span');label.textContent=place.name;L.circleMarker([place.lat,place.lng],{pane:'landmarks',radius:3.5,color:'#8b7962',fillColor:'#fff',fillOpacity:1,weight:1.7}).bindTooltip(label,{permanent:m!.getZoom()>=13,direction:'right',offset:[5,0],className:'landmark-label'}).addTo(group!);}}render();m.on('zoomend',render);return()=>{m.off('zoomend',render);};},[showLandmarks,dark]);
+  const framedFavourites=useRef(false);
+  useEffect(()=>{if(!favouritesOnly){framedFavourites.current=false;return;}if(framedFavourites.current||!items.length||!map.current)return;const size=map.current.getSize();map.current.fitBounds(L.latLngBounds(items.map(d=>[d.lat,d.lng] as [number,number])),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(230,size.y*.35)],paddingBottomRight:[35,Math.min(65,size.y*.15)],maxZoom:14});framedFavourites.current=true;},[favouritesOnly,items,dark]);
   const framedCollection=useRef('');
-  useEffect(()=>{const homes=items.filter(d=>featuredIds.includes(d.id));const key=homes.map(d=>d.id).join(',')+'|'+items.length;if(!homes.length||key===framedCollection.current)return;const m=map.current;if(m){const size=m.getSize();m.fitBounds(L.latLngBounds(homes.map(d=>[d.lat,d.lng] as [number,number])),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(215,size.y*.3)],paddingBottomRight:[35,Math.min(65,size.y*.15)],maxZoom:14});framedCollection.current=key;}},[featuredIds,items,dark]);
+  useEffect(()=>{if(favouritesOnly)return;const homes=items.filter(d=>featuredIds.includes(d.id));const key=homes.map(d=>d.id).join(',')+'|'+items.length;if(!homes.length||key===framedCollection.current)return;const m=map.current;if(m){const size=m.getSize();m.fitBounds(L.latLngBounds(homes.map(d=>[d.lat,d.lng] as [number,number])),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(215,size.y*.3)],paddingBottomRight:[35,Math.min(65,size.y*.15)],maxZoom:14});framedCollection.current=key;}},[featuredIds,items,dark,favouritesOnly]);
   useEffect(()=>{const d=items.find(d=>d.id===selected);if(d)map.current?.flyTo([d.lat,d.lng],14,{duration:window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:.7});},[selected,dark]);
   useEffect(()=>{
     const group=lines.current;if(!group)return;group.clearLayers();if(!showLines)return;

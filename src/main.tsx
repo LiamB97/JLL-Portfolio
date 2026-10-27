@@ -35,7 +35,7 @@ function App() {
   const [admin, setAdmin] = useState(isStaff);
   const [howItWorks,setHowItWorks]=useState(()=>location.hash==='#how-it-works');
   const favourites=useFavourites();
-  const [showFavourites,setShowFavourites]=useState(false);
+  const [showFavourites,setShowFavourites]=useState(false),[favouritesOnly,setFavouritesOnly]=useState(false);
   const [linkLoading,setLinkLoading]=useState(()=>{const q=new URLSearchParams(location.search);return Boolean(q.get('broker')||q.get('collection'));});
   const [broker,setBroker]=useState<BrokerCard|null>(null);
   const [collection,setCollection]=useState<BuyerCollection|null>(null),[collectionError,setCollectionError]=useState(''),[featuredOnly,setFeaturedOnly]=useState(false);
@@ -65,6 +65,7 @@ function App() {
     `${d.name} ${d.area} ${d.postcode}`.toLowerCase().includes(query.toLowerCase()) &&
     (!region||regionFor(d)===region)&&(!area||nearArea(d,area)) &&
     (!featuredOnly||featuredIds.includes(d.id)) &&
+    (!favouritesOnly||favourites.ids.includes(d.id)) &&
     (!beds || d.bedrooms.includes(Number(beds))) &&
     (!type || d.propertyTypes.includes(type))
   ).sort((a,b)=>sort==='name'?a.name.localeCompare(b.name):sort==='area'?a.area.localeCompare(b.area):Number(featuredIds.includes(b.id))-Number(featuredIds.includes(a.id)));
@@ -73,7 +74,7 @@ function App() {
   useEffect(()=>{setCurrentDevelopment(!admin&&!howItWorks&&active?active.id:null);},[selected,active?.id,admin,howItWorks]);
   useEffect(()=>{if(!query.trim()||admin)return;const timer=setTimeout(()=>track('search_used',{result_count:filtered.length}),700);return()=>clearTimeout(timer);},[query,admin]);
   const filterCount = [beds, type,region,area].filter(Boolean).length;
-  const reset = () => { setQuery(''); setBeds(''); setType('');setFeaturedOnly(false);setRegion('');setArea(''); };
+  const reset = () => { setQuery(''); setBeds(''); setType('');setFeaturedOnly(false);setFavouritesOnly(false);setRegion('');setArea(''); };
 
   return <div className={`portfolio-app ${admin ? 'admin-active' : 'explorer-active'}`}>
     <header className="explorer-header" dir="ltr">
@@ -107,18 +108,19 @@ function App() {
           </div>
           <p className="area-filter-note">{t("Areas show developments within 2 km of the named centre. Regions are approximate geographic sectors.")}</p><div className="filter-panel-actions"><button onClick={reset}>{t("Reset filters")}</button><button className="primary" onClick={() => setFilters(false)}>{t('Show {count} developments',{count:filtered.length})}</button></div>
         </section>}
-        <div className="explorer-result-count" role="status" aria-live="polite">{loading ? 'Loading London homes…' : <><span className="collection-dot"/><strong>{t('{count} developments',{count:filtered.length})}</strong><span>{t("across London")}</span>{(query || filterCount > 0) && <button onClick={reset}>{t("Clear all")}</button>}</>}</div>
+        <button className={favouritesOnly?"favourites-map-toggle on":"favourites-map-toggle"} aria-pressed={favouritesOnly} onClick={()=>{setFavouritesOnly(!favouritesOnly);setSelected(null);}}><Heart size={15} fill={favouritesOnly?"currentColor":"none"}/>{t(favouritesOnly?"Show all developments":"Show favourites only")}<span>{favourites.ids.filter(id=>items.some(d=>d.id===id)).length}</span></button>
+        <div className="explorer-result-count" role="status" aria-live="polite">{loading ? 'Loading London homes…' : <><span className="collection-dot"/><strong>{t('{count} developments',{count:filtered.length})}</strong><span>{t("across London")}</span>{(query || filterCount > 0 || favouritesOnly) && <button onClick={reset}>{t("Clear all")}</button>}</>}</div>
         {collection&&<section className="featured-intro"><span><Star size={15}/><strong>{collection.title}</strong></span><p>{featuredIds.length} {t("featured developments · Picked by")} {collection.brokerName}</p><button aria-pressed={featuredOnly} onClick={()=>setFeaturedOnly(!featuredOnly)}>{featuredOnly?'Explore all developments':'Show featured only'}</button></section>}
         {broker&&<section className="broker-intro"><span>{t('Your JLL broker')}: <strong>{broker.name}</strong></span><a onClick={()=>track('whatsapp_click',{surface:'broker_banner'})} href={'https://wa.me/'+broker.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent(t("Hi, I'd like more information about your London developments."))} target="_blank" rel="noopener noreferrer">{t('WhatsApp {name}',{name:broker.name})} <ArrowUpRight size={13}/></a></section>}
         {collectionError&&<div className="explorer-message" role="status">{collectionError} {t("You can still explore the full portfolio.")}</div>}
         {error && <div className="explorer-message" role="alert">{error}<button onClick={() => { setError(''); void refresh().catch(e => setError(e.message)); }}>{t("Retry")}</button></div>}
-        {!loading && !filtered.length && !error && view === 'map' && <div className="explorer-message"><Building2 size={20}/><div><strong>{t("No homes found")}</strong><p>{t("Try a different area or broaden your filters.")}</p></div><button onClick={reset}>{t("Reset")}</button></div>}
+        {!loading && !filtered.length && !error && view === 'map' && <div className="explorer-message"><Building2 size={20}/><div><strong>{t(favouritesOnly?"No favourites match this view":"No homes found")}</strong><p>{t(favouritesOnly?"Save developments with the heart button, or clear your filters to see more favourites.":"Try a different area or broaden your filters.")}</p></div><button onClick={reset}>{t("Reset")}</button></div>}
       </div>
       <div className="explorer-workspace">
-        {view !== 'list' && <Suspense fallback={<div className="map-shell map-loading" role="status">{t("Loading your London map…")}</div>}><PortfolioMap items={filtered} selected={selected} onSelect={select} network={network} transportError={transportError} featuredIds={featuredIds}/></Suspense>}
+        {view !== 'list' && <Suspense fallback={<div className="map-shell map-loading" role="status">{t("Loading your London map…")}</div>}><PortfolioMap items={filtered} selected={selected} onSelect={select} network={network} transportError={transportError} featuredIds={featuredIds} favouriteIds={favourites.ids} favouritesOnly={favouritesOnly}/></Suspense>}
         {view !== 'map' && <section className="explorer-list" aria-label={t("Development listings")}>
           <div className="listing-heading"><h1>{t("London collection")}</h1><label>{t("Sort by")}<select aria-label={t("Sort developments")} value={sort} onChange={e => setSort(e.target.value)}><option value="curated">{t("Our collection")}</option><option value="name">{t("Name: A–Z")}</option><option value="area">{t("Area: A–Z")}</option></select></label></div>
-          {loading ? <p className="empty-state">{t("Loading your London collection…")}</p> : !filtered.length ? <div className="empty-state"><Building2 size={30}/><h2>{t("No homes found")}</h2><p>{t("Try a different area or broaden your filters.")}</p><button onClick={reset}>{t("Reset filters")}</button></div> : <div className="cards">
+          {loading ? <p className="empty-state">{t("Loading your London collection…")}</p> : !filtered.length ? <div className="empty-state"><Building2 size={30}/><h2>{t(favouritesOnly?"No favourites match this view":"No homes found")}</h2><p>{t(favouritesOnly?"Save developments with the heart button, or clear your filters to see more favourites.":"Try a different area or broaden your filters.")}</p><button onClick={reset}>{t("Reset filters")}</button></div> : <div className="cards">
             {filtered.map(d => <article className="property-card-wrap" key={d.id}><button className={`property-card ${selected === d.id ? 'selected' : ''}`} key={d.id} onClick={() => setSelected(d.id)}>
               <div className="card-image"><img src={d.images[0] || '/images/city.svg'} alt={d.sample ? 'Architectural illustration' : d.name} loading="lazy" onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/city.svg'; }}/><span className="card-tag">{featuredIds.includes(d.id)?t('FEATURED'):d.sample ? t('SAMPLE COLLECTION') : t(d.status)}</span><span className="card-arrow"><ArrowUpRight size={18}/></span></div>
               <div className="card-body"><p className="card-area"><MapPin size={12}/>{d.area}<span>· {d.postcode}</span></p><h2>{d.name}</h2><p className="card-beds">{bedroomLabel(d.bedrooms).replace('Studio',t('Studio'))} {t("bedrooms")} <span>·</span> {d.propertyTypes.map(ptype=>t(ptype)).join(' & ')}</p><div className="card-bottom"><span>{t("Prices from")} <strong>{money(d.priceFrom)}</strong></span><span className="explore">{t("Explore")} <ArrowRight size={14}/></span></div></div>
