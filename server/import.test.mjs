@@ -22,3 +22,12 @@ test('imports do not invent missing bedroom, price, coordinates or property type
  assert.throws(()=>validateDevelopment({...d,_reviewConfirmed:true}));
  const unsafe=parseListing('<script type="application/ld+json">'+JSON.stringify({'@type':'Apartment',description:'<p>Private gardens.</p><script>bad()</script> Email sales@agent.com.'})+'</script>','https://agent.com/a');assert.ok(!unsafe.description.includes('<'));
 });
+test('JLL embedded property data yields the gallery, features, price and bedrooms missed by metadata',()=>{
+ const property={title:'One Thames Quay',developmentHeadline:'One Thames Quay, Canary Wharf',postcode:'E14 9FW',lat:51.49982,lng:-.01189,price:{minAmount:624000,currencyCode:'GBP'},rooms:{bedrooms:['1 Bed','2 Bed','3 Bed']},description:'Waterfront homes with private balconies and resident facilities.',amenities:['Concierge','Residents’ gym'],images:['https://images.example.com/one.jpg','https://images.example.com/two.jpg']};
+ const html='<script id="__NEXT_DATA__" type="application/json">'+JSON.stringify({props:{pageProps:{property}}})+'</script>';
+ const d=parseListing(html,'https://residential.jll.co.uk/sale-development/one-thames-quay/abc');assert.equal(d.name,property.title);assert.equal(d.images.length,2);assert.equal(d.priceFrom,624000);assert.deepEqual(d.bedrooms,[1,2,3]);assert.equal(d.amenities.length,2);assert.equal(d._requiresReview,true);
+});
+test('visible page copy, feature lists and lazy-loaded gallery images supplement sparse metadata',()=>{
+ const html='<meta property="og:site_name" content="Other Agent"><main><h1>Angel Village</h1><section><p>A collection of 1, 2 and 3 bedroom apartments with private outside space, generous interiors and a landscaped courtyard.</p><p>Prices from £650,000. Located in London EC1V 8AB.</p></section><ul class="features"><li>Residents’ gym</li><li>Private terraces</li></ul><img alt="Other Agent" src="/branding.png"><img alt="Living room" data-src="/living.jpg"><img alt="Kitchen" src="/small.jpg" srcset="/small.jpg 300w, /large.jpg 1400w"></main><footer><p>Contact our agent on 020 1234 5678.</p></footer>';
+ const d=parseListing(html,'https://developer.com/');assert.ok(d.description.length>100);assert.equal(d.priceFrom,650000);assert.equal(d.postcode,'EC1V 8AB');assert.deepEqual(d.bedrooms,[1,2,3]);assert.ok(d.images.includes('https://developer.com/large.jpg'));assert.ok(!d.images.includes('https://developer.com/branding.png'));assert.equal(d.amenities.length,2);
+});

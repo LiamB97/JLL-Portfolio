@@ -30,6 +30,9 @@ export function validateDevelopment(raw) {
  d.sample = raw.sample === true;
  d.sourceUrl = '';
  if(raw.sourceUrl) {const u=new URL(raw.sourceUrl);if(u.protocol!=='https:'||u.hostname!=='residential.jll.co.uk'||u.username||u.password)throw Error('Source must be an HTTPS residential.jll.co.uk URL.');d.sourceUrl=u.href;}
+ d.importSource='';
+ if(raw.importSource){const u=new URL(raw.importSource);if(u.protocol!=='https:'||u.username||u.password||u.port)throw Error('Import provenance must be a public HTTPS URL.');d.importSource=u.href.slice(0,2000);}
+ d.translations={};for(const language of ['ar','zh-CN','tr']){const value=raw.translations?.[language];if(value&&typeof value.description==='string'&&value.description.trim()){if(value.description.length>6000)throw Error('Translated descriptions must be at most 6000 characters.');d.translations[language]={description:value.description.trim(),amenities:Array.isArray(value.amenities)?value.amenities.filter(x=>typeof x==='string'&&x.trim()).slice(0,30).map(x=>x.trim().slice(0,500)):[]};}}
  return d;
 }
 export function distanceKm(a,b) {

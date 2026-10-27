@@ -1,0 +1,4 @@
+export const normalName=value=>String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const source=value=>{try{const u=new URL(value);return u.hostname.toLowerCase()+u.pathname.replace(/\/$/,'').toLowerCase();}catch{return '';}};
+export function duplicateDevelopment(rows,candidate,excludeId){return rows.find(d=>d.id!==excludeId&&((source(candidate.sourceUrl||candidate.importSource)&&source(candidate.sourceUrl||candidate.importSource)===source(d.sourceUrl||d.importSource))||(normalName(candidate.name)&&normalName(d.name)===normalName(candidate.name))));}
+export function rejectDuplicate(rows,candidate,excludeId){const match=duplicateDevelopment(rows,candidate,excludeId);if(match){const e=Error(`${match.name} is already published. Open the existing development and review an update instead.`);e.status=409;e.duplicateId=match.id;throw e;}}

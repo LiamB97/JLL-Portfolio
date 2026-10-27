@@ -1,4 +1,7 @@
-import {resolveOrigins,searchJourneys} from './journey-search.mjs';
+import {translations as defaultTranslations} from './translations.mjs';
+import {postcodeLocation} from './location.mjs';
+import {parsePastedListing} from './pasted-import.mjs';
+import {rejectDuplicate} from './duplicates.mjs';
 import {accessService,AccessError,checkOrigin,sessionCookie,publicDevelopment,publicUser} from './access.mjs';
 import {randomBytes} from 'node:crypto';
 import {validateDevelopment} from './model.mjs';
@@ -7,20 +10,20 @@ import {fetchSource} from './sync.mjs';
 import {ConflictError,refreshPortfolio} from './netlify-store.mjs';
 const reviewedDevelopment=raw=>{try{return validateDevelopment(raw);}catch(e){throw new AccessError(e.message);}};
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
-export function createNetlifyApi({repository,password,fetchListings=fetchSource,extract=extractListing,network,connections,journeys=searchJourneys,origins=resolveOrigins}){
+export function createNetlifyApi({repository,password,fetchListings=fetchSource,extract=extractListing,network,connections,translations=defaultTranslations}){
  const access=accessService(repository,password);
  return async(request)=>{
   const url=new URL(request.url);const route=url.pathname.replace(/^\/\.netlify\/functions\/api/,'/api');const method=request.method;
   try{
    if(method==='GET'&&route==='/api/health'){await repository.read();return json({ok:true});}
    if(method==='GET'&&route==='/api/developments')return json((await repository.read()).developments.map(publicDevelopment));
+   if(method==='GET'&&route.startsWith('/api/brokers/'))return json(await access.publicBroker(decodeURIComponent(route.slice('/api/brokers/'.length))));
    if(method==='GET'&&route.startsWith('/api/collections/'))return json(await access.publicCollection(decodeURIComponent(route.slice('/api/collections/'.length))));
    if(method==='GET'&&route==='/api/access/status')return json(await access.status());
    if(method==='GET'&&route==='/api/access/me'){const actor=await access.authenticate(request,{allowLegacy:false});return json({user:publicUser(actor),csrf:actor.csrf});}
    if(method==='POST'&&['/api/access/bootstrap','/api/access/login','/api/access/accept'].includes(route)){checkOrigin(request);if(Number(request.headers.get('content-length')||0)>10000)return json({error:'Request is too large.'},413);const text=await request.text();if(Buffer.byteLength(text)>10000)return json({error:'Request is too large.'},413);let body;try{body=JSON.parse(text);}catch{return json({error:'Request must contain valid JSON.'},400);}const action=route.split('/').pop();const result=await access[action](body);const response=json({user:result.user,csrf:result.csrf});response.headers.set('Set-Cookie',sessionCookie(result.token,request));return response;}
    if(method==='POST'&&route==='/api/access/logout'){const actor=await access.authenticate(request,{allowLegacy:false});access.csrf(request,actor);await access.logout(actor);const response=json({ok:true});response.headers.set('Set-Cookie',sessionCookie('',request,true));return response;}
-   if(method==='GET'&&route==='/api/journey/origins'){try{return json({places:await origins(url.searchParams.get('q'),await network())});}catch{return json({error:'Could not find this London place. Try a station or full postcode.'},422);}}
-   if(method==='POST'&&route==='/api/journey/search'){checkOrigin(request);if(Number(request.headers.get('content-length')||0)>4000)return json({error:'Request is too large.'},413);const text=await request.text();if(Buffer.byteLength(text)>4000)return json({error:'Request is too large.'},413);let body;try{body=JSON.parse(text);}catch{return json({error:'Request must contain valid JSON.'},400);}try{return json(await journeys(body,(await repository.read()).developments));}catch(e){return json({error:e.message},422);}}
+   if(method==='GET'&&route.startsWith('/api/translations/')){const id=decodeURIComponent(route.slice('/api/translations/'.length)),language=url.searchParams.get('language');const d=(await repository.read()).developments.find(x=>x.id===id);if(!d)return json({error:'Development not found.'},404);if(!['ar','zh-CN','tr'].includes(language))return json({error:'Unsupported language.'},422);try{return json(await translations(d,language));}catch{return json({error:'Automatic translation is unavailable. The original English description is shown.'},503);}}
    if(method==='GET'&&route==='/api/transport'){try{return json(await network());}catch{return json({error:'The TfL network is temporarily unavailable.'},503);}}
    if(method==='GET'&&route==='/api/stations'){try{return json((await network()).stations);}catch{return json({error:'The TfL station directory is temporarily unavailable.'},503);}}
    if(method==='GET'&&route.startsWith('/api/connections/')){const id=decodeURIComponent(route.slice('/api/connections/'.length));const d=(await repository.read()).developments.find(d=>d.id===id);if(!d)return json({error:'Development not found.'},404);try{return json(await connections(d));}catch{return json({error:'Station routes are temporarily unavailable.'},503);}}
@@ -29,6 +32,8 @@ export function createNetlifyApi({repository,password,fetchListings=fetchSource,
    const actor=await access.authenticate(request);
    if(!['GET','HEAD'].includes(method))access.csrf(request,actor);
    if(method==='POST'&&route==='/api/admin/login')return json({ok:true});
+   if(route==='/api/admin/drafts'){access.stock(actor);if(method==='GET')return json(((await repository.read()).drafts||[]).filter(d=>actor.role==='admin'||d.ownerId===actor.id));}
+   if(method==='DELETE'&&route.startsWith('/api/admin/drafts/')){access.stock(actor);return json(await repository.update(s=>{const acting=access.current(s,actor);access.stock(acting);const id=route.slice('/api/admin/drafts/'.length),d=(s.drafts||[]).find(d=>d.id===id);if(!d)throw new AccessError('Draft not found.',404);if(acting.role!=='admin'&&d.ownerId!==actor.id)throw new AccessError('You can only remove your own drafts.',403);s.drafts=s.drafts.filter(d=>d.id!==id);return {ok:true};}));}
    if(method==='GET'&&route==='/api/admin/invites')return json(await access.invites(actor));
    if(method==='DELETE'&&route.startsWith('/api/admin/invites/'))return json(await access.revokeInvite(actor,decodeURIComponent(route.slice('/api/admin/invites/'.length))));
    if(method==='GET'&&route==='/api/admin/users')return json(await access.users(actor));
@@ -45,21 +50,25 @@ export function createNetlifyApi({repository,password,fetchListings=fetchSource,
    if(Number(request.headers.get('content-length')||0)>2_000_000)return json({error:'Import exceeds the 2MB limit.'},413);
    const text=await request.text();if(Buffer.byteLength(text)>2_000_000)return json({error:'Import exceeds the 2MB limit.'},413);
    let body;try{body=JSON.parse(text);}catch{return json({error:'Request must contain valid JSON.'},400);}
+   if(method==='POST'&&route==='/api/admin/profile')return json(await access.updateProfile(actor,body));
+   if(method==='POST'&&route==='/api/admin/drafts'){access.stock(actor);if(!body||typeof body.data!=='object'||!body.data)throw new AccessError('A draft needs development data.');return json(await repository.update(s=>{const acting=access.current(s,actor);access.stock(acting);s.drafts||=[];let d=body.id?s.drafts.find(d=>d.id===body.id):null;if(body.id&&!d)throw new AccessError('Draft no longer exists. Save a new draft.',404);if(d&&acting.role!=='admin'&&d.ownerId!==actor.id)throw new AccessError('You can only edit your own drafts.',403);if(!d){if(s.drafts.length>=200)throw new AccessError('Remove an old draft before adding another.');d={id:randomBytes(12).toString('hex'),ownerId:actor.id};s.drafts.push(d);}d.data=structuredClone(body.data);d.editingId=typeof body.editingId==='string'?body.editingId:null;d.name=String(body.name||'Untitled development').slice(0,100);d.updatedAt=new Date().toISOString();return structuredClone(d);}),201);}
    if(method==='POST'&&route==='/api/admin/users/invite')return json(await access.invite(actor,body),201);
    if(method==='PATCH'&&route.startsWith('/api/admin/users/'))return json(await access.updateUser(actor,decodeURIComponent(route.slice('/api/admin/users/'.length)),body));
    if(method==='POST'&&route==='/api/admin/collections')return json(await access.saveCollection(actor,body),201);
    if(method==='PUT'&&route.startsWith('/api/admin/collections/'))return json(await access.saveCollection(actor,body,decodeURIComponent(route.slice('/api/admin/collections/'.length))));
+   if(method==='POST'&&route==='/api/admin/location'){access.stock(actor);try{return json(await postcodeLocation(body.postcode));}catch(e){return json({error:e.message},422);}}
+   if(method==='POST'&&route==='/api/admin/parse-text'){access.stock(actor);try{return json({development:parsePastedListing(body.text,body.url||undefined),warning:'Text loaded as an unpublished draft. Complete missing fields and review all details before publishing.'});}catch(e){return json({error:e.message},422);}}
    if(method==='POST'&&route==='/api/admin/extract'){access.stock(actor);try{return json({development:await extract(body?.url),warning:'Unpublished draft. Check every field and photo; remove third-party branding, contact details and sales language before publishing.'});}catch(e){return json({error:e.message},422);}}
    if(method==='POST'&&route==='/api/admin/import'){
     access.stock(actor);const rows=body?.developments;if(!Array.isArray(rows)||!rows.length||rows.length>200)throw Error('Import 1–200 developments at a time.');
     const items=rows.map((raw,i)=>{try{return {...reviewedDevelopment(raw),id:randomBytes(12).toString('hex'),createdBy:actor.id};}catch(e){throw new AccessError(`Row ${i+1}: ${e.message}`);}});
-    await repository.update(state=>{access.stock(access.current(state,actor));state.developments.push(...items);});return json({created:items.length},201);
+    await repository.update(state=>{access.stock(access.current(state,actor));const checked=[...state.developments];for(const item of items){rejectDuplicate(checked,item);checked.push(item);}state.developments.push(...items);});return json({created:items.length},201);
    }
    if(method==='PUT'&&route.startsWith('/api/admin/developments/')){
     const id=decodeURIComponent(route.slice('/api/admin/developments/'.length));const data={...reviewedDevelopment(body),id};
-    const found=await repository.update(state=>{const acting=access.current(state,actor);access.stock(acting);const i=state.developments.findIndex(d=>d.id===id);if(i<0)return false;if(!access.canEdit(acting,state.developments[i]))throw new AccessError('You can only edit your own developments.',403);state.developments[i]={...state.developments[i],...data};return true;});return json(found?{ok:true}:{error:'Development not found.'},found?200:404);
+    const found=await repository.update(state=>{const acting=access.current(state,actor);access.stock(acting);const i=state.developments.findIndex(d=>d.id===id);if(i<0)return false;if(!access.canEdit(acting,state.developments[i]))throw new AccessError('You can only edit your own developments.',403);rejectDuplicate(state.developments,data,id);state.developments[i]={...state.developments[i],...data};return true;});return json(found?{ok:true}:{error:'Development not found.'},found?200:404);
    }
    return json({error:'API endpoint not found.'},404);
-  }catch(e){if(e instanceof AccessError)return json({error:e.message},e.status);if(e instanceof ConflictError)return json({error:e.message},409);console.error('Portfolio API request failed:',e.message);return json({error:'Unable to complete the request. Check your data or retry shortly; saved stock has been preserved.'},422);}
+  }catch(e){if(e.duplicateId)return json({error:e.message,duplicateId:e.duplicateId},409);if(e instanceof AccessError)return json({error:e.message},e.status);if(e instanceof ConflictError)return json({error:e.message},409);console.error('Portfolio API request failed:',e.message);return json({error:'Unable to complete the request. Check your data or retry shortly; saved stock has been preserved.'},422);}
  };
 }

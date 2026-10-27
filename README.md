@@ -1,6 +1,6 @@
 # JLL London residential portfolio
 
-A first working prototype: one shared, London-only portfolio for brokers to send to buyers. React/TypeScript + Vite, Leaflet + MapLibre vector map, Express API and persistent SQLite storage. No buyer accounts or enquiry forms. Journey destinations are not saved in the portfolio database.
+A first working prototype: one shared, London-only portfolio for brokers to send to buyers. React/TypeScript + Vite, Leaflet + MapLibre vector map, Express API and persistent SQLite storage. No buyer accounts or enquiry forms. Destinations entered in development details are not saved in the portfolio database.
 
 ## Run
 
@@ -69,24 +69,42 @@ The public TfL Unified API supplies the network. `server/data/tfl-network.json` 
 
 Nearby station cards request actual walking and cycling routes from TfL Journey Planner, showing routed metres/kilometres and minutes. Successful station route results are cached for 24 hours, keyed by the public development ID and coordinates. These are route-planning estimates, not guarantees of current conditions. If no route can be obtained, the card explicitly offers **Check route** and labels any fallback distance as straight-line; it never invents a walking/cycling duration. Six route requests (three stations × two modes) are made per uncached development. No Google routing key is required.
 
-Walk/Cycle links and the existing postcode journey form open Google Maps separately. The development-detail journey form sends its destination directly to Google and does not save it. The separate map journey filter sends its starting place to TfL, as described below. JLL listing descriptions are displayed without an added editorial heading; existing media URLs still point to JLL's Cloudinary assets.
+Walk/Cycle links and the existing postcode journey form open Google Maps separately. The development-detail journey form sends its destination directly to Google and does not save it. The former map journey-time filter has been removed. JLL listing descriptions are displayed without an added editorial heading; existing media URLs still point to JLL's Cloudinary assets.
 
-## Area and journey search
+## Appearance, language and simpler search
 
-The main search supports development names, postcodes, area text, and phrases such as **20 minutes from Angel**. Press Enter to open the journey form and confirm the starting point, maximum minutes, public transport/walking/cycling mode and London departure time. The form also accepts a station, landmark or full London postcode directly. Exact rail station names and curated places resolve locally; other places use TfL disambiguation with an explicit choice if needed.
+The header’s globe/appearance button offers **English, Arabic, Simplified Chinese and Turkish**, plus **Light, Dark and Automatic** themes. Preferences persist on the current browser. Arabic uses a right-to-left buyer layout; staff management stays in English. Both themes use a matching JLL Residential lockup and OpenFreeMap vector style. Map positions survive theme changes. The listing photographs are not inverted or recoloured.
 
-Journey searches calculate real TfL routes **from the chosen place to each published development**, including walking legs. They check at most six developments per API request and show progress and verified matching results as batches complete. Total journey durations come from TfL, never straight-line estimates. Unavailable routes remain explicitly counted and excluded; clearing the journey filter returns all stock. Results are planning estimates for the selected departure, not a guarantee of service conditions. They may take tens of seconds for the full catalogue. Verified route results are cached for 15 minutes in bounded server memory, with concurrent requests deduplicated; they are not stored in the portfolio database or Netlify Blobs. Buyer starting places are sent to TfL; this app does not create a buyer record. A fully arbitrary conversational AI search is not used.
+Interface and WhatsApp shortlist messages use bundled authored translations. Public development descriptions and amenities use a cached, no-key Google translation endpoint; no API account, billing setup, AI extraction provider or secret is required. The no-key endpoint has no service guarantee and may throttle or become unavailable. The interface labels automatic translations as guidance, offers the original English, and explicitly falls back to English on failure. Only the public listing copy is sent to that translation service, never staff accounts, broker email/phone or buyer-entered destinations. The backend accepts a published development ID and a fixed language, not arbitrary submitted text. Netlify caches results in its private `jll-translations` store using a source-copy hash; changing source text invalidates the cache. Staff can optionally save reviewed translations in the development editor; these take precedence. Editing English copy in that editor clears reviewed translations to avoid stale claims.
 
-**Filters** includes approximate London geographic sectors (Central, North, North east, East, South east, South, South west, West, North west) and 40 named-area centres, including Knightsbridge, Mayfair and Battersea. Named-area filters use a clearly labelled 2 km radius; these are proximity filters, not administrative boundaries. Regions and named areas combine with bedroom/property-type filters.
+The former natural-language journey-time search, progress panel and batch routing endpoints have been removed. The map search matches development names, areas and postcodes. Nearby station Walk/Cycle links and the destination form inside development details continue to open Google Maps separately.
 
-**Landmarks** adds subtle dots from zoom 12 and small labels from zoom 13 for Harrods, Harvey Nichols, Selfridges, Westfield, major parks and cultural destinations. Buyers can toggle these off. These are curated geographic points; other local places and universities remain supplied by the basemap. Landmark aliases such as Harvey Nics work in journey search.
+Filters include approximate London sectors and 40 named-area centres, such as Knightsbridge, Mayfair and Battersea. Named-area filters use a clearly labelled 2 km radius. Landmarks add subtle points from zoom 12 and labels from zoom 13 for Harrods, Harvey Nichols, Selfridges, Westfield, parks and cultural destinations.
+
+## Reviewed imports and drafts
+
+The single-page JLL importer reads the full publicly embedded property record. Verified against One Thames Quay: 30 gallery images, nine amenities, GBP starting price, 1/2/3-bedroom options and full listing description are available. Other websites use structured metadata, visible property paragraphs, feature lists and lazy-loaded gallery/background images. No LLM or AI processing API is used. A source may still block automated access or omit data from its HTML. Missing fields stay blank for review rather than being invented.
+
+The paste-text fallback reads a development name on the first line, followed by listing copy, features, prices and bedroom options. Image URLs can be added separately. Staff may look up coordinates for a full postcode; these are explicitly labelled as the postcode centre and need position checks. The source page URL is retained privately as import provenance and removed from public development responses.
+
+Staff can choose the cover image, remove photos, preview an unpublished draft as a buyer, and save incomplete drafts to finish later. Drafts live in private portfolio state, survive server restarts/deployments and cannot appear in public stock. Admins see all drafts; broker admins see their own. Regular brokers cannot use stock or draft tools. Publishing still requires review confirmation. Duplicate names or matching source URLs are rejected atomically, including within bulk imports. The editor offers a reviewed update to the existing record, preserving its public ID, buyer links and collection references.
+
+The Netlify build runs `scripts/check-source-imports.mjs` against the owner-supplied Angel Village, Savills and One Thames Quay URLs, plus small translation checks. `dist/import-check.json` contains only public-source metadata counts and check statuses; raw HTML, page scripts, credentials and staff data are never published there. These checks do not publish any development or create staff records.
+
+## Broker-specific WhatsApp links
+
+Invitation acceptance requires the invited **email address**, a password and an international **WhatsApp number** (for example +447900123456). Numbers are normalized and format-checked; the app does not claim to verify ownership by SMS. Existing staff can add or update their own number in their workspace without recreating an account.
+
+Signed-in staff can copy a personal portfolio URL (`?broker=<opaque slug>`) after adding their number. Anonymous buyers opening that link see the broker’s name and a WhatsApp button for that broker. Featured-collection links always use the collection owner’s current contact details. A conflicting `broker` parameter cannot override the collection owner. The generic portfolio URL has no broker assigned and no WhatsApp recipient button; buyers can still copy a favourites message into their existing broker conversation. Buyer messages preserve known collection/broker context in individual development links. No message is ever sent automatically.
+
+The public broker lookup exposes only the display name, WhatsApp number and opaque share slug to someone holding the corresponding link; staff email, role, internal ID and account records remain private. There is no public broker directory or recipient chosen from whoever happens to be signed in on the buyer’s browser. Disabled users’ personal and collection links stop resolving. Updating a broker’s number updates the contact shown on their existing links.
 
 ## Network requirements
 
 JLL source pages: `digitalportfolio.live.jll.com`, `residential.jll.co.uk`.
 Browser vector styles/tiles/fonts: `tiles.openfreemap.org`; raster fallback: `tile.openstreetmap.org`. Backend transport and routing: `api.tfl.gov.uk`. The map opens full-screen by default; Split and List are optional header views. Nearby developments are clustered until zoomed in.
 JLL image hosting: `res.cloudinary.com`. Optional web fonts: `fonts.googleapis.com`, `fonts.gstatic.com` (system-font fallback exists).
-The Google Maps journey action opens `www.google.com` in the buyer's browser. Staff website imports need outbound HTTPS/DNS to each supplied public source host. Imported media URLs need their own source access. Review those destinations when real listing media is available.
+The Google Maps journey action opens `www.google.com` in the buyer's browser. Staff website imports need outbound HTTPS/DNS to each supplied public source host. Imported media URLs need their own source access. Automatic descriptions use `translate.googleapis.com`; optional postcode lookup uses `api.postcodes.io`. No-key services can be unavailable and have explicit fallback paths. Review those destinations when real listing media is available.
 
 ## Before public launch
 
