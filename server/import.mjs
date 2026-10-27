@@ -64,7 +64,7 @@ export function parseListing(html,url){
  images=[...new Set([...images,...candidates.sort((a,b)=>b.score-a.score).map(x=>x.url)])].slice(0,30);
  content('p,h1,h2,h3,h4,li,div,address').append(' ');
  const allText=content('body').text().replace(/\s+/g,' ');
- const postcode=typeof address==='object'?address.postalCode||embeddedFacts?.postcode||allText.match(/\b(?:GIR 0AA|[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i)?.[0]?.toUpperCase()||'':'';
+ const addressObject=address&&typeof address==='object'?address:{};const postcode=addressObject.postalCode||addressObject.postcode||addressObject.postCode||embeddedFacts?.postcode||((typeof address==='string'?address+' ':'')+$('h1').first().text()+' '+allText).match(/\b(?:GIR 0AA|[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})/i)?.[0]?.toUpperCase()||'';
  const priceText=allText.match(/(?:prices?\s+(?:start(?:ing)?\s+)?from|from)\s*£\s*([\d,]+(?:\.\d+)?)\s*(million|m\b|k\b)?/i);
  const priceFallback=priceText?Math.round(Number(priceText[1].replaceAll(',',''))*(/^m/i.test(priceText[2]||'')?1000000:/^k/i.test(priceText[2]||'')?1000:1)):null;
  if(!name&&!description&&!images.length)throw Error('No readable listing content was found. This page may require browser access. Use Paste the listing text to prepare a draft instead.');

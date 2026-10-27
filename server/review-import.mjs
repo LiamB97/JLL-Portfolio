@@ -13,6 +13,6 @@ export async function importForReview(url,existing,{extract=extractListing,fetch
    throw first;
   }
  }
- const development=await extract(u.href);let locationNote='';if((development.lat===null||development.lng===null)&&development.postcode){try{const point=await postcodeLocation(development.postcode);development.lat=point.lat;development.lng=point.lng;locationNote=' '+point.note;}catch{}}
+ const development=await extract(u.href);let locationNote='';if((development.lat===null||development.lng===null)&&development.postcode){try{const point=await postcodeLocation(development.postcode);development.lat=point.lat;development.lng=point.lng;if(!development.area||development.area==='London')development.area=point.area||development.area;locationNote=' '+point.note;}catch{}}
  return {development,warning:'Unpublished draft. Check every field and photo; remove third-party branding, contact details and sales language before publishing.'+locationNote,source:'Source website'};
 }
