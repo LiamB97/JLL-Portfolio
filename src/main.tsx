@@ -3,6 +3,8 @@ import {createRoot} from 'react-dom/client';
 import {ArrowUpRight, ArrowRight, MapPin, Search, SlidersHorizontal, Map as MapIcon, LayoutGrid, Columns2, X, TrainFront, ChevronLeft, ChevronRight, Check, ArrowLeft, Building2, Settings, Heart, Star} from 'lucide-react';
 const PortfolioMap=lazy(()=>import('./Map'));
 const StaffPortal=lazy(()=>import('./StaffPortal'));
+import JourneySearch,{useJourneySearch} from './JourneySearch';
+import {areas,regions,nearArea,regionFor,parseJourneyQuery} from './explore';
 import Favourites from './Favourites';
 import {useFavourites} from './shortlist';
 import {type Development, type Station, type TransportNetwork, type Connections, type BuyerCollection, money, bedroomLabel, distance} from './types';
@@ -17,6 +19,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
+  const [region,setRegion]=useState(''),[area,setArea]=useState(''),[journeyOpen,setJourneyOpen]=useState(false),[journeyIntent,setJourneyIntent]=useState<ReturnType<typeof parseJourneyQuery>>(null);
+  const travel=useJourneySearch(items);
+  const journeyMinutes=useMemo(()=>Object.fromEntries((travel.journey?.results||[]).filter(r=>r.status==='verified').map(r=>[r.id,r.minutes as number])),[travel.journey?.results]);
   const [beds, setBeds] = useState('');
   const [type, setType] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
@@ -49,14 +54,15 @@ function App() {
   }, [refresh]);
   const select = useCallback((id: string) => setSelected(id), []);
   const filtered = items.filter(d =>
-    `${d.name} ${d.area} ${d.postcode}`.toLowerCase().includes(query.toLowerCase()) &&
+    (!parseJourneyQuery(query)&&`${d.name} ${d.area} ${d.postcode}`.toLowerCase().includes(query.toLowerCase())||Boolean(parseJourneyQuery(query))) &&
+    (!region||regionFor(d)===region)&&(!area||nearArea(d,area))&&(!travel.journey||(journeyMinutes[d.id]!==undefined&&journeyMinutes[d.id]<=travel.journey.limit)) &&
     (!featuredOnly||featuredIds.includes(d.id)) &&
     (!beds || d.bedrooms.includes(Number(beds))) &&
     (!type || d.propertyTypes.includes(type))
   ).sort((a,b)=>sort==='name'?a.name.localeCompare(b.name):sort==='area'?a.area.localeCompare(b.area):Number(featuredIds.includes(b.id))-Number(featuredIds.includes(a.id)));
   const active = items.find(d => d.id === selected);
-  const filterCount = [beds, type].filter(Boolean).length;
-  const reset = () => { setQuery(''); setBeds(''); setType('');setFeaturedOnly(false); };
+  const filterCount = [beds, type,region,area].filter(Boolean).length;
+  const reset = () => { setQuery(''); setBeds(''); setType('');setFeaturedOnly(false);setRegion('');setArea('');travel.clear();setJourneyOpen(false);setJourneyIntent(null); };
 
   return <div className={`portfolio-app ${admin ? 'admin-active' : 'explorer-active'}`}>
     <header className="explorer-header">
@@ -75,34 +81,35 @@ function App() {
     </header>
     {admin ? <Suspense fallback={<p className="staff-portal">Loading staff workspace…</p>}><StaffPortal items={items} onChange={refresh}/></Suspense> : <main className={`map-explorer view-${view}`} aria-label="London development explorer">
       <div className="explorer-tools">
-        <div className="explorer-search">
+        <form className="explorer-search" onSubmit={e=>{e.preventDefault();const intent=parseJourneyQuery(query)||(query.trim()?{place:query.trim(),minutes:20,mode:'transit'}:null);setJourneyIntent(intent);setJourneyOpen(true);setFilters(false);}}>
           <Search size={18}/>
-          <input aria-label="Search by area, development or postcode" placeholder="Search an area, development or postcode" value={query} onChange={e => setQuery(e.target.value)}/>
-          {query && <button className="clear-search" aria-label="Clear search" onClick={() => setQuery('')}><X size={15}/></button>}
-          <button className={`explorer-filter-button ${filterCount ? 'filtered' : ''}`} aria-expanded={filters} aria-controls="explorer-filter-panel" onClick={() => setFilters(!filters)}><SlidersHorizontal size={16}/><span>Filters</span>{filterCount > 0 && <b>{filterCount}</b>}</button>
-        </div>
+          <input aria-label="Search by area, development, postcode or journey" placeholder="Area, development or ‘20 minutes from Angel’" value={query} onChange={e => setQuery(e.target.value)}/>
+          {query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => setQuery('')}><X size={15}/></button>}
+          <button type="button" aria-label="Filters" className={`explorer-filter-button ${filterCount ? 'filtered' : ''}`} aria-expanded={filters} aria-controls="explorer-filter-panel" onClick={() => {setFilters(!filters);setJourneyOpen(false);}}><SlidersHorizontal size={16}/><span>Filters</span>{filterCount > 0 && <b>{filterCount}</b>}</button>
+        </form>
+        <JourneySearch open={journeyOpen} setOpen={setJourneyOpen} intent={journeyIntent} run={async(...args)=>{setQuery('');await travel.run(...args);}} journey={travel.journey} clear={travel.clear}/>
         {filters && <section id="explorer-filter-panel" className="explorer-filter-panel" aria-label="Filter developments">
           <div className="filter-panel-heading"><strong>Find your London home</strong><button aria-label="Close filters" onClick={() => setFilters(false)}><X size={16}/></button></div>
-          <div className="explorer-filter-fields">
+          <div className="explorer-filter-fields"><label>London region<select aria-label="London region" value={region} onChange={e=>setRegion(e.target.value)}><option value="">All London</option>{regions.map(r=><option key={r}>{r}</option>)}</select></label><label>Near an area<select aria-label="Near an area" value={area} onChange={e=>setArea(e.target.value)}><option value="">All areas</option>{areas.map(a=><option key={a.name}>{a.name}</option>)}</select></label>
             <label>Bedrooms<select aria-label="Bedrooms" value={beds} onChange={e => setBeds(e.target.value)}><option value="">Any bedrooms</option><option value="0">Studio</option>{[1,2,3,4].map(n => <option key={n} value={n}>{n} bedrooms</option>)}</select></label>
             <label>Property type<select aria-label="Property type" value={type} onChange={e => setType(e.target.value)}><option value="">All types</option>{Array.from(new Set(items.flatMap(d => d.propertyTypes))).map(t => <option key={t}>{t}</option>)}</select></label>
           </div>
-          <div className="filter-panel-actions"><button onClick={reset}>Reset filters</button><button className="primary" onClick={() => setFilters(false)}>Show {filtered.length} developments</button></div>
+          <p className="area-filter-note">Areas show developments within 2 km of the named centre. Regions are approximate geographic sectors.</p><div className="filter-panel-actions"><button onClick={reset}>Reset filters</button><button className="primary" onClick={() => setFilters(false)}>Show {filtered.length} developments</button></div>
         </section>}
         <div className="explorer-result-count" role="status" aria-live="polite">{loading ? 'Loading London homes…' : <><span className="collection-dot"/><strong>{filtered.length} developments</strong><span>across London</span>{(query || filterCount > 0) && <button onClick={reset}>Clear all</button>}</>}</div>
         {collection&&<section className="featured-intro"><span><Star size={15}/><strong>{collection.title}</strong></span><p>{featuredIds.length} featured developments · Picked by {collection.brokerName}</p><button aria-pressed={featuredOnly} onClick={()=>setFeaturedOnly(!featuredOnly)}>{featuredOnly?'Explore all developments':'Show featured only'}</button></section>}
         {collectionError&&<div className="explorer-message" role="status">{collectionError} You can still explore the full portfolio.</div>}
         {error && <div className="explorer-message" role="alert">{error}<button onClick={() => { setError(''); void refresh().catch(e => setError(e.message)); }}>Retry</button></div>}
-        {!loading && !filtered.length && !error && view === 'map' && <div className="explorer-message"><Building2 size={20}/><div><strong>No homes found</strong><p>Try a different area or broaden your filters.</p></div><button onClick={reset}>Reset</button></div>}
+        {!loading && !filtered.length && !error && view === 'map' && <div className="explorer-message"><Building2 size={20}/><div><strong>{travel.journey?.running?'Checking for nearby homes…':'No homes found'}</strong><p>{travel.journey?.running?'Verified matches appear as journeys are checked.':'Try a different area or broaden your filters.'}</p></div><button onClick={reset}>Reset</button></div>}
       </div>
       <div className="explorer-workspace">
-        {view !== 'list' && <Suspense fallback={<div className="map-shell map-loading" role="status">Loading your London map…</div>}><PortfolioMap items={filtered} selected={selected} onSelect={select} network={network} transportError={transportError} featuredIds={featuredIds}/></Suspense>}
+        {view !== 'list' && <Suspense fallback={<div className="map-shell map-loading" role="status">Loading your London map…</div>}><PortfolioMap items={filtered} selected={selected} onSelect={select} network={network} transportError={transportError} featuredIds={featuredIds} journeyOrigin={travel.journey?.origin} journeyMinutes={journeyMinutes} journeyKey={travel.journey&&!travel.journey.running?`${travel.journey.origin.lat},${travel.journey.origin.lng}/${travel.journey.limit}/${travel.journey.departure}`:''}/></Suspense>}
         {view !== 'map' && <section className="explorer-list" aria-label="Development listings">
           <div className="listing-heading"><h1>London collection</h1><label>Sort by<select aria-label="Sort developments" value={sort} onChange={e => setSort(e.target.value)}><option value="curated">Our collection</option><option value="name">Name: A–Z</option><option value="area">Area: A–Z</option></select></label></div>
           {loading ? <p className="empty-state">Loading your London collection…</p> : !filtered.length ? <div className="empty-state"><Building2 size={30}/><h2>No homes found</h2><p>Try a different area or broaden your filters.</p><button onClick={reset}>Reset filters</button></div> : <div className="cards">
             {filtered.map(d => <article className="property-card-wrap" key={d.id}><button className={`property-card ${selected === d.id ? 'selected' : ''}`} key={d.id} onClick={() => setSelected(d.id)}>
               <div className="card-image"><img src={d.images[0] || '/images/city.svg'} alt={d.sample ? 'Architectural illustration' : d.name} loading="lazy" onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/city.svg'; }}/><span className="card-tag">{featuredIds.includes(d.id)?'FEATURED':d.sample ? 'SAMPLE COLLECTION' : d.status.toUpperCase()}</span><span className="card-arrow"><ArrowUpRight size={18}/></span></div>
-              <div className="card-body"><p className="card-area"><MapPin size={12}/>{d.area}<span>· {d.postcode}</span></p><h2>{d.name}</h2><p className="card-beds">{bedroomLabel(d.bedrooms)} bedrooms <span>·</span> {d.propertyTypes.join(' & ')}</p><div className="card-bottom"><span>Prices from <strong>{money(d.priceFrom)}</strong></span><span className="explore">Explore <ArrowRight size={14}/></span></div></div>
+              <div className="card-body"><p className="card-area"><MapPin size={12}/>{d.area}<span>· {d.postcode}</span></p><h2>{d.name}</h2><p className="card-beds">{bedroomLabel(d.bedrooms)} bedrooms <span>·</span> {d.propertyTypes.join(' & ')}</p><div className="card-bottom"><span>Prices from <strong>{money(d.priceFrom)}</strong></span>{journeyMinutes[d.id]!==undefined&&<span className="journey-card-time">{journeyMinutes[d.id]} min journey</span>}<span className="explore">Explore <ArrowRight size={14}/></span></div></div>
             </button><button className={favourites.ids.includes(d.id)?"save-card saved":"save-card"} aria-pressed={favourites.ids.includes(d.id)} aria-label={favourites.ids.includes(d.id)?`Remove ${d.name} from favourites`:`Save ${d.name} to favourites`} onClick={()=>favourites.toggle(d.id)}><Heart size={17} fill={favourites.ids.includes(d.id)?"currentColor":"none"}/></button></article>)}
           </div>}
         </section>}

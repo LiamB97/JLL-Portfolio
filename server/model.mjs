@@ -1,5 +1,6 @@
 export function validateDevelopment(raw) {
  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw Error('Each development must be an object.');
+ if(raw._requiresReview&&raw._reviewConfirmed!==true)throw Error('Review and confirm the imported details and media before publishing.');
  const d = {};
  for (const key of ['name','area','postcode','description']) {
   if (typeof raw[key] !== 'string' || !raw[key].trim()) throw Error(`${key} is required.`);

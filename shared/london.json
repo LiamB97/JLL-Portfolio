@@ -1,0 +1,20 @@
+{
+ "areas":[
+  {"name":"Angel","lat":51.5328,"lng":-0.1058},{"name":"Battersea","lat":51.4775,"lng":-0.1494},{"name":"Belgravia","lat":51.4974,"lng":-0.1527},{"name":"Bermondsey","lat":51.4981,"lng":-0.0637},{"name":"Brentford","lat":51.4875,"lng":-0.3103},{"name":"Brixton","lat":51.4613,"lng":-0.1156},{"name":"Camden","lat":51.5392,"lng":-0.1426},{"name":"Canada Water","lat":51.4981,"lng":-0.0497},{"name":"Canary Wharf","lat":51.5054,"lng":-0.0235},{"name":"Chelsea","lat":51.4875,"lng":-0.1687},{"name":"Clapham","lat":51.4624,"lng":-0.1380},{"name":"Colindale","lat":51.5955,"lng":-0.2502},{"name":"Croydon","lat":51.3757,"lng":-0.0928},{"name":"Ealing","lat":51.5149,"lng":-0.3015},{"name":"Elephant & Castle","lat":51.4943,"lng":-0.1000},{"name":"Finsbury Park","lat":51.5646,"lng":-0.1064},{"name":"Fulham","lat":51.4753,"lng":-0.2012},{"name":"Greenwich","lat":51.4810,"lng":-0.0091},{"name":"Hammersmith","lat":51.4934,"lng":-0.2250},{"name":"Hampstead","lat":51.5564,"lng":-0.1780},{"name":"Hendon","lat":51.5831,"lng":-0.2263},{"name":"Islington","lat":51.5415,"lng":-0.1020},{"name":"Kensington","lat":51.5009,"lng":-0.1925},{"name":"King’s Cross","lat":51.5308,"lng":-0.1238},{"name":"Knightsbridge","lat":51.5015,"lng":-0.1607},{"name":"London Bridge","lat":51.5055,"lng":-0.0865},{"name":"Marylebone","lat":51.5203,"lng":-0.1566},{"name":"Mayfair","lat":51.5100,"lng":-0.1470},{"name":"Nine Elms","lat":51.4816,"lng":-0.1285},{"name":"Notting Hill","lat":51.5116,"lng":-0.1965},{"name":"Paddington","lat":51.5154,"lng":-0.1755},{"name":"Richmond","lat":51.4613,"lng":-0.3037},{"name":"Royal Docks","lat":51.5078,"lng":0.0284},{"name":"Stratford","lat":51.5413,"lng":-0.0033},{"name":"Walthamstow","lat":51.5829,"lng":-0.0198},{"name":"Wembley","lat":51.5520,"lng":-0.2963},{"name":"Westminster","lat":51.4995,"lng":-0.1330},{"name":"White City","lat":51.5120,"lng":-0.2246},{"name":"Wimbledon","lat":51.4215,"lng":-0.2064},{"name":"Woolwich","lat":51.4900,"lng":0.0692}
+ ],
+ "landmarks":[
+  {"name":"Harrods","category":"Shopping","lat":51.4994,"lng":-0.1632},
+  {"name":"Harvey Nichols","aliases":["Harvey Nics","Harvey Nicks"],"category":"Shopping","lat":51.5011,"lng":-0.1598},
+  {"name":"Selfridges","category":"Shopping","lat":51.5144,"lng":-0.1527},
+  {"name":"Westfield London","category":"Shopping","lat":51.5079,"lng":-0.2210},
+  {"name":"Westfield Stratford City","category":"Shopping","lat":51.5430,"lng":-0.0084},
+  {"name":"Hyde Park","category":"Park","lat":51.5073,"lng":-0.1657},
+  {"name":"Regent’s Park","category":"Park","lat":51.5313,"lng":-0.1569},
+  {"name":"Royal Albert Hall","category":"Culture","lat":51.5009,"lng":-0.1774},
+  {"name":"Victoria and Albert Museum","aliases":["V&A"],"category":"Culture","lat":51.4966,"lng":-0.1722},
+  {"name":"Natural History Museum","category":"Culture","lat":51.4967,"lng":-0.1764},
+  {"name":"British Museum","category":"Culture","lat":51.5194,"lng":-0.1270},
+  {"name":"Tate Modern","category":"Culture","lat":51.5076,"lng":-0.0994},
+  {"name":"Buckingham Palace","category":"Landmark","lat":51.5014,"lng":-0.1419}
+ ]
+}

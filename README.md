@@ -1,6 +1,6 @@
 # JLL London residential portfolio
 
-A first working prototype: one shared, London-only portfolio for brokers to send to buyers. React/TypeScript + Vite, Leaflet + MapLibre vector map, Express API and persistent SQLite storage. No buyer accounts, enquiries or stored journey destinations.
+A first working prototype: one shared, London-only portfolio for brokers to send to buyers. React/TypeScript + Vite, Leaflet + MapLibre vector map, Express API and persistent SQLite storage. No buyer accounts or enquiry forms. Journey destinations are not saved in the portfolio database.
 
 ## Run
 
@@ -24,12 +24,13 @@ Open **Manage** in the header. Buyers never need an account. Staff use individua
 
 | Role | Developments | Buyer collections | Accounts |
 | --- | --- | --- | --- |
-| Admin | Manage all stock; refresh the JLL website import | Manage all collections | Invite staff, assign Admin/Broker, enable/disable access |
-| Broker | Add stock and edit/remove their own manually added developments | Create and manage their own featured collections using any published stock | No account or role management |
+| Admin | Manage all stock; refresh JLL website stock | Manage all collections | Invite any role, reset passwords, change roles, enable/disable access |
+| Broker admin | Manage all stock, including imports, edits, removals and refresh | Manage their own collections | Invite new regular brokers only; revoke their own invitations |
+| Broker | Browse published stock; cannot add, extract, edit, remove, upload or refresh | Manage their own collections using any published stock | Invite new regular brokers only; revoke their own invitations |
 
 For the first owner account, configure `ADMIN_PASSWORD` (12+ characters) in Netlify environment variables with Functions scope, then redeploy. Visit Manage and enter that value once as the **owner setup code**, together with your name, email and a new account password. It does not create an account automatically. After setup, the shared bootstrap password no longer grants API access. A fresh local server generates its setup code in ignored `.data/admin-password` if `ADMIN_PASSWORD` is unset. Never commit or log this file or credential values.
 
-Admins create **one-use invitation links** that expire after seven days. Copy and send them privately; the app does not send email or WhatsApp messages automatically. Invite links keep the token in the URL fragment rather than a query string. Staff choose their password when accepting. Reinviting an existing email resets that account's password when the new link is accepted. Pending invitations can be revoked. Disabling an account or changing its role revokes its sessions and pending invitations; the last active admin cannot be disabled or demoted.
+Staff create **one-use invitation links** that expire after seven days. Copy and send them privately; the app does not send email or WhatsApp messages automatically. Invite links keep the token in the URL fragment rather than a query string. Staff choose their password when accepting. Only Admins may invite elevated roles or reinvite an existing email to reset an account password. Other roles cannot replace pending invitations, reset accounts or modify existing users. Acceptance rechecks the issuer is still active and allowed to issue that role. Pending invitations can be revoked. Disabling an account or changing its role revokes its sessions and pending invitations; the last active admin cannot be disabled or demoted.
 
 Passwords use salted scrypt hashes. Session tokens are random, stored as hashes server-side, and delivered in HttpOnly, SameSite=Strict cookies (Secure on HTTPS); sessions expire after eight hours. Mutations require CSRF protection and matching Origin when present. Permissions and ownership are enforced by the server and rechecked inside mutations, including conditional-write retries. Repeated failed logins trigger a temporary account lock. Passwords/session tokens are never placed in browser localStorage. Role/permission, invite expiry, CSRF, revocation and restart-persistence tests cover these flows.
 
@@ -40,9 +41,9 @@ Netlify stores private staff state alongside portfolio state in its private Blob
 - Use the ordinary manual-entry form for name, area, description, GBP starting price, coordinates, bedroom choices, property types, amenities and media URLs.
 - **Refresh website stock** fetches the JLL new-homes search page, reads its publicly embedded structured data, filters London sale developments and updates records using stable JLL identifiers. It does not need a private API or credentials. A successful source fetch returned 71 developments; 69 passed validation. The Albion Nord Penthouse at SEVEN has ambiguous bedroom metadata; The Lanes has no positive starting price. Both are skipped for manual review rather than guessed. Image links point to JLL's existing Cloudinary media. No broker contact data is copied into the portfolio.
 - Website refresh runs automatically five seconds after server startup and every six hours while the server runs. Set `AUTO_SYNC_HOURS=0` to disable it, or another positive number (minimum hourly) to change the interval. Manual entries are preserved, and incomplete/failed source fetches keep existing stock. Website refresh overwrites edits to website-managed records; missing website listings are retained for review, not automatically withdrawn. Deleting an imported listing does not block it from coming back on refresh. Stock withdrawal and curated exclusions need a fuller workflow before launch.
-- Individual-page metadata extraction remains a best-effort fallback. Missing fields must be completed before publishing. The verified integration uses the search collection; the single-page extractor does not yet support every JLL page format.
+- **Import a website listing** accepts public HTTPS development pages from JLL, other agents or developers. It extracts available JSON-LD/Open Graph property facts into an unpublished editable form, strips detected contact details and agency/developer sentences, and excludes detected logo media. Source pages never auto-publish. Staff must fill missing required fields and confirm the review checkbox before publishing; extracted drafts are also checked for review confirmation by the API. Photo thumbnails support visual checks for watermarks/branding. Automatic text cleanup is best effort; reviewers remain responsible for factual accuracy, branding and media permissions. External source links are not displayed in buyer details. Sites that block requests, require JavaScript or omit metadata need manual entry. HTTPS-only public-host checks, validated redirect targets, a 3MB/15-second fetch limit and direct-production DNS pinning limit server-side fetch risks. Cloud workspace egress/DNS may block real external-source checks even when deployed Netlify Functions can reach them.
 - Upload a JSON array of records for bulk additions (up to 200 records / 2MB); review before publishing. Repeated imports add records rather than silently replacing them. Use the advanced editor/form as the schema template. Uploaded image bytes are not stored; supply HTTPS URLs. Direct video files play in the portfolio; externally hosted player URLs, including Brightcove, open in a separate tab.
-- Edit prices, media, availability and other details in place, or remove records from the published collection in the admin screen. CSV, file storage and per-broker collections are future work.
+- Edit prices, media, availability and other details in place, or remove records from the published collection in the admin screen. CSV and uploaded image-file storage are future work.
 
 SQLite database and generated local password live in ignored `.data/`. `DATA_DIR` can move these to a persistent volume. Back up this directory. No database migration or user stock is cleared on restart; sample seeding happens only once. Do not delete a database with real stock to refresh samples.
 
@@ -68,14 +69,24 @@ The public TfL Unified API supplies the network. `server/data/tfl-network.json` 
 
 Nearby station cards request actual walking and cycling routes from TfL Journey Planner, showing routed metres/kilometres and minutes. Successful station route results are cached for 24 hours, keyed by the public development ID and coordinates. These are route-planning estimates, not guarantees of current conditions. If no route can be obtained, the card explicitly offers **Check route** and labels any fallback distance as straight-line; it never invents a walking/cycling duration. Six route requests (three stations × two modes) are made per uncached development. No Google routing key is required.
 
-Walk/Cycle links and the existing postcode journey form open Google Maps separately. Buyer-entered destinations are sent there directly and are not saved by this application. JLL listing descriptions are displayed without an added editorial heading; existing media URLs still point to JLL's Cloudinary assets.
+Walk/Cycle links and the existing postcode journey form open Google Maps separately. The development-detail journey form sends its destination directly to Google and does not save it. The separate map journey filter sends its starting place to TfL, as described below. JLL listing descriptions are displayed without an added editorial heading; existing media URLs still point to JLL's Cloudinary assets.
+
+## Area and journey search
+
+The main search supports development names, postcodes, area text, and phrases such as **20 minutes from Angel**. Press Enter to open the journey form and confirm the starting point, maximum minutes, public transport/walking/cycling mode and London departure time. The form also accepts a station, landmark or full London postcode directly. Exact rail station names and curated places resolve locally; other places use TfL disambiguation with an explicit choice if needed.
+
+Journey searches calculate real TfL routes **from the chosen place to each published development**, including walking legs. They check at most six developments per API request and show progress and verified matching results as batches complete. Total journey durations come from TfL, never straight-line estimates. Unavailable routes remain explicitly counted and excluded; clearing the journey filter returns all stock. Results are planning estimates for the selected departure, not a guarantee of service conditions. They may take tens of seconds for the full catalogue. Verified route results are cached for 15 minutes in bounded server memory, with concurrent requests deduplicated; they are not stored in the portfolio database or Netlify Blobs. Buyer starting places are sent to TfL; this app does not create a buyer record. A fully arbitrary conversational AI search is not used.
+
+**Filters** includes approximate London geographic sectors (Central, North, North east, East, South east, South, South west, West, North west) and 40 named-area centres, including Knightsbridge, Mayfair and Battersea. Named-area filters use a clearly labelled 2 km radius; these are proximity filters, not administrative boundaries. Regions and named areas combine with bedroom/property-type filters.
+
+**Landmarks** adds subtle dots from zoom 12 and small labels from zoom 13 for Harrods, Harvey Nichols, Selfridges, Westfield, major parks and cultural destinations. Buyers can toggle these off. These are curated geographic points; other local places and universities remain supplied by the basemap. Landmark aliases such as Harvey Nics work in journey search.
 
 ## Network requirements
 
 JLL source pages: `digitalportfolio.live.jll.com`, `residential.jll.co.uk`.
 Browser vector styles/tiles/fonts: `tiles.openfreemap.org`; raster fallback: `tile.openstreetmap.org`. Backend transport and routing: `api.tfl.gov.uk`. The map opens full-screen by default; Split and List are optional header views. Nearby developments are clustered until zoomed in.
 JLL image hosting: `res.cloudinary.com`. Optional web fonts: `fonts.googleapis.com`, `fonts.gstatic.com` (system-font fallback exists).
-The Google Maps journey action opens `www.google.com` in the buyer's browser. Imported media URLs need their own source access. Review those destinations when real listing media is available.
+The Google Maps journey action opens `www.google.com` in the buyer's browser. Staff website imports need outbound HTTPS/DNS to each supplied public source host. Imported media URLs need their own source access. Review those destinations when real listing media is available.
 
 ## Before public launch
 
