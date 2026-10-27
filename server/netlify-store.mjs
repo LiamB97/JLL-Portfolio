@@ -16,10 +16,10 @@ export function portfolioRepository(store=getStore({name:'jll-london-portfolio',
  }
  return {read,update};
 }
-export async function refreshPortfolio(repository,records){
+export async function refreshPortfolio(repository,records,guard){
  const ready=[],skipped=[];
  for(const raw of records){try{ready.push(convertSource(raw));}catch(e){skipped.push({name:String(raw.title||'Unknown listing'),reason:e.message});}}
  if(!ready.length)throw Error('No valid London developments found; existing stock was kept.');
  const report={imported:ready.length,skipped,syncedAt:new Date().toISOString(),note:'Website-managed stock is refreshed in place. Manual stock and missing website listings are retained.'};
- await repository.update(state=>{const merged=new Map(state.developments.filter(d=>!d.sample).map(d=>[d.id,d]));for(const d of ready)merged.set(d.id,d);state.developments=[...merged.values()];state.lastSync=report;});return report;
+ await repository.update(state=>{if(guard)guard(state);const merged=new Map(state.developments.filter(d=>!d.sample).map(d=>[d.id,d]));for(const d of ready)merged.set(d.id,d);state.developments=[...merged.values()];state.lastSync=report;});return report;
 }

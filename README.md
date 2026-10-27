@@ -18,9 +18,22 @@ Vite serves the interface on port 5173 and proxies API calls to the server on po
 
 `npm test` runs validation/import tests and a real API integration test using an isolated temporary database. `npm run build` performs strict TypeScript checking and produces the browser bundle.
 
-## Administrator access
+## Staff accounts and roles
 
-Use **Manage** in the header. The server uses `ADMIN_PASSWORD` if configured (at least 12 characters), otherwise generates a random password in `.data/admin-password` with owner-only permissions. Read that file locally to sign in; never commit or share it. Passwords are kept only in React memory during a session, not localStorage. The production host must securely configure `ADMIN_PASSWORD`, use HTTPS, and protect backups. No buyer login is required. The API rate-limits failed administrator logins. Further production security review and multi-user admin accounts are outside this prototype.
+Open **Manage** in the header. Buyers never need an account. Staff use individual email/password accounts with these roles:
+
+| Role | Developments | Buyer collections | Accounts |
+| --- | --- | --- | --- |
+| Admin | Manage all stock; refresh the JLL website import | Manage all collections | Invite staff, assign Admin/Broker, enable/disable access |
+| Broker | Add stock and edit/remove their own manually added developments | Create and manage their own featured collections using any published stock | No account or role management |
+
+For the first owner account, configure `ADMIN_PASSWORD` (12+ characters) in Netlify environment variables with Functions scope, then redeploy. Visit Manage and enter that value once as the **owner setup code**, together with your name, email and a new account password. It does not create an account automatically. After setup, the shared bootstrap password no longer grants API access. A fresh local server generates its setup code in ignored `.data/admin-password` if `ADMIN_PASSWORD` is unset. Never commit or log this file or credential values.
+
+Admins create **one-use invitation links** that expire after seven days. Copy and send them privately; the app does not send email or WhatsApp messages automatically. Invite links keep the token in the URL fragment rather than a query string. Staff choose their password when accepting. Reinviting an existing email resets that account's password when the new link is accepted. Pending invitations can be revoked. Disabling an account or changing its role revokes its sessions and pending invitations; the last active admin cannot be disabled or demoted.
+
+Passwords use salted scrypt hashes. Session tokens are random, stored as hashes server-side, and delivered in HttpOnly, SameSite=Strict cookies (Secure on HTTPS); sessions expire after eight hours. Mutations require CSRF protection and matching Origin when present. Permissions and ownership are enforced by the server and rechecked inside mutations, including conditional-write retries. Repeated failed logins trigger a temporary account lock. Passwords/session tokens are never placed in browser localStorage. Role/permission, invite expiry, CSRF, revocation and restart-persistence tests cover these flows.
+
+Netlify stores private staff state alongside portfolio state in its private Blobs store, using conditional ETag writes. Local SQLite stores the access state in private database metadata. Public APIs strip staff ownership metadata and never expose user records, password hashes or session data. Keep backups private. No production staff account has been fabricated or automatically activated.
 
 ## Managing developments
 
@@ -33,15 +46,23 @@ Use **Manage** in the header. The server uses `ADMIN_PASSWORD` if configured (at
 
 SQLite database and generated local password live in ignored `.data/`. `DATA_DIR` can move these to a persistent volume. Back up this directory. No database migration or user stock is cleared on restart; sample seeding happens only once. Do not delete a database with real stock to refresh samples.
 
+## Buyer favourites and featured links
+
+Buyers save developments with the heart button in details or list cards. Favourites persist in `localStorage` on that browser/device; no buyer profile or server-side shortlist is created. If browser storage is unavailable, the app explicitly says the shortlist lasts only for the visit. The favourites drawer creates a WhatsApp message containing the selected names, areas and direct development links. Copy the message into an existing broker conversation, or open WhatsApp and choose a recipient. Nothing is sent automatically. A message link opens the requested development via `?development=<id>` and keeps a known collection context when applicable; invitation fragments and arbitrary URL parameters are never copied into buyer messages.
+
+Brokers use **Buyer collections** to choose 1–50 developments and create a stable share link (`?collection=<opaque slug>`). The chosen properties appear as featured pins above clusters, with a collection title and broker display name. The rest of the portfolio remains available, and buyers may optionally switch to featured-only results. These links are readable without sign-in by anyone possessing them; use general titles, not buyer details. A broker can edit or remove only their own collections; admins can manage any collection. Disabling the owning staff account makes its collection links unavailable. Removed developments are omitted from the public collection.
+
+The maximum-price filter and price sorting have been removed. Development-level **prices from** remain in cards/details as guidance. Accurate unit-budget filtering requires unit-level prices and availability, not just the starting price of a development.
+
 ## Honest prototype data and transport
 
 A fresh empty database initially contains six clearly labelled fictional collections. The first successful website refresh removes those samples and populates the verified JLL collection. The current database contains 69 website-sourced developments. Original architectural illustrations remain as fallbacks when images are unavailable.
 
 The JLL logo and Source Sans font are sourced from the public JLL website and retained as local assets. The overall red/black/white design is provisional pending supplied brand guidelines. Development photography uses the original website image URLs; verify media use and long-term URL stability before launch.
 
-The default map uses OpenFreeMap's clean Positron vector style through MapLibre, with university/college labels from zoom 13 and more local place labels from zoom 16. It needs no Google account or key. Development pins show a building icon, not prices. Prices remain in details/list cards. Basic OpenStreetMap raster tiles provide a fallback if WebGL or vector-style loading fails.
+The default map uses OpenFreeMap's clean Positron vector style through MapLibre, with university/college labels from zoom 13 and more local place labels from zoom 16. It needs no Google account or key. Development pins use a simple pin with a centre dot, without a building/office icon or price. Prices remain in details/list cards. Basic OpenStreetMap raster tiles provide a fallback if WebGL or vector-style loading fails.
 
-**Stations** shows the TfL rail network: 511 unique stops across 21 lines in the verified snapshot, including Tube, DLR, Elizabeth line, the six named Overground lines, trams and the cable car. This is the TfL-operated rail network, not London's entire bus or National Rail network. **TfL lines** overlays official geographic route geometry, with a colour-coded legend, individual line filtering and station popups naming the serving lines. It is not a reproduction of TfL's schematic Tube map.
+**Stations** shows the TfL rail network: 511 unique stops across 21 lines in the verified snapshot, including Tube, DLR, Elizabeth line, the six named Overground lines, trams and the cable car. This is the TfL-operated rail network, not London's entire bus or National Rail network. **TfL lines** overlays official geographic route geometry, with a colour-coded legend, multiple line selection and station popups naming every serving line. Stations use a dedicated pane above the line geometry so their markers remain visible. It is not a reproduction of TfL's schematic Tube map.
 
 The public TfL Unified API supplies the network. `server/data/tfl-network.json` is a verified initial snapshot so deployment doesn't depend on an external cold fetch. The backend refreshes topology after seven days and retains stale data if a refresh fails. Netlify caches topology in the separate `jll-transport` Blobs store; local development keeps it in memory. Run `node --use-env-proxy scripts/refresh-transport.mjs` to refresh the bundled snapshot deliberately. Requests identify the application with a User-Agent; default scraper user agents may be denied.
 
@@ -66,7 +87,7 @@ The collection importer has been exercised against the live JLL site. Establish 
 
 The deployment includes a public-data seed of 69 website-sourced London developments in `server/data/initial-portfolio.json`. Administrator credentials and `.data/` are excluded. The first storage mutation persists that seed; subsequent deployments preserve existing site storage. The `refresh-stock` scheduled function runs every six hours on a published production deployment; scheduled functions are not ordinary public API endpoints. Scheduled refresh execution should be checked in Netlify logs; the live public API and existing storage reads have been exercised.
 
-Use Netlify's Git import / Deploy to Netlify flow for this repository, with build command `npm run build` and publish directory `dist` (configured automatically). Set `ADMIN_PASSWORD` securely in Netlify environment variables, scoped to Functions, to enable administration. Choose a password at least 12 characters long. No password is embedded in the build; if it is missing, administrator access returns 503 while public browsing stays available. Website imports use public JLL content and require no API key. Netlify provides the Blobs runtime credentials automatically.
+Use Netlify's Git import / Deploy to Netlify flow for this repository, with build command `npm run build` and publish directory `dist` (configured automatically). Set `ADMIN_PASSWORD` securely in Netlify environment variables, scoped to Functions, to enable first-owner setup. Choose a password at least 12 characters long. No password is embedded in the build; if it is missing, owner setup remains disabled while public browsing stays available. Manage explains the exact setup steps. Website imports use public JLL content and require no API key. Netlify provides the Blobs runtime credentials automatically.
 
 The one-click deployment flow may ask to connect GitHub and confirm a new project/repository. It does not replace any existing Netlify site. Review any hosting limits or plan information presented by Netlify; no paid plan has been purchased by this project.
 

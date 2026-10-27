@@ -1,4 +1,4 @@
-export interface Development {id:string;name:string;area:string;postcode:string;lat:number;lng:number;priceFrom:number;bedrooms:number[];propertyTypes:string[];amenities:string[];images:string[];videos:string[];description:string;sample:boolean;status:string;sourceUrl:string}
+export interface Development {canEdit?:boolean;id:string;name:string;area:string;postcode:string;lat:number;lng:number;priceFrom:number;bedrooms:number[];propertyTypes:string[];amenities:string[];images:string[];videos:string[];description:string;sample:boolean;status:string;sourceUrl:string}
 export interface Station {id?:string;lineIds?:string[];name:string;lat:number;lng:number;lines:string}
 export const money=(n:number)=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP',maximumFractionDigits:0}).format(n);
 export const bedroomLabel=(b:number[])=>b.map(x=>x===0?'Studio':String(x)).join(', ');
@@ -7,3 +7,5 @@ export interface TransportLine {id:string;name:string;mode:string;colour:string;
 export interface TransportNetwork {source:string;attribution:string;updatedAt:string;stations:Station[];lines:TransportLine[];missingGeometry?:string[];stale?:boolean}
 export interface StationRoute extends Station {straightLineKm:number;walking:{distanceMeters:number;durationMinutes:number}|null;cycling:{distanceMeters:number;durationMinutes:number}|null}
 export interface Connections {source:string;updatedAt:string;stations:StationRoute[]}
+
+export interface BuyerCollection {slug:string;title:string;brokerName:string;developmentIds:string[]}
