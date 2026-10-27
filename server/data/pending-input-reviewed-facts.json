@@ -1,0 +1,860 @@
+{
+  "1": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "description": "Chelsea Waterfront is a riverside development on Lots Road, designed by Sir Terry Farrell. Residents’ facilities include a 24-hour concierge, swimming pool, gym, residents’ lounge and terrace.",
+      "images": [
+        "https://www.chelseawaterfront.com/uploads/image/202508/HUT-TE-CON-022.jpg"
+      ],
+      "videos": [
+        "https://www.chelseawaterfront.com/uploads/video/202507/banner-20250516.mp4"
+      ],
+      "amenities": [
+        "24-hour concierge",
+        "Swimming pool",
+        "Gym",
+        "Residents’ lounge",
+        "Terrace"
+      ]
+    }
+  },
+  "2": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "description": "Postmark is a mixed-use neighbourhood spanning the WC1 and EC1 areas of central London. Its residential phases are complemented by new public spaces and commercial and retail accommodation.",
+      "bedrooms": [
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "images": [
+        "https://www.taylorwimpeycentrallondon.com/cdn/w_1800/h_990/crop/dpr_2/20_4190_postmark_ext_view_01_phoenix_draft-07_ab1200x800.jpg",
+        "https://www.taylorwimpeycentrallondon.com/cdn/w_1800/h_990/crop/dpr_2/20_4190_postmark_ext_view_04_courtyard_draft-07_ab1200x800.jpg"
+      ]
+    }
+  },
+  "4": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "description": "Silkstream is a residential development in Hendon with podium gardens, a public park and a water feature. Facilities include a concierge, residents’ lounge, co-working spaces, gym, fitness studio and private screening room.",
+      "images": [
+        "https://berkeleyinternational.com/hubfs/vb2094063_STG_SS_CGI_Ext_Roof_Terraces_v5_3500x1750.jpg",
+        "https://berkeleyinternational.com/hubfs/STG_SS_CGI_Int_Concierge.jpg"
+      ],
+      "amenities": [
+        "Concierge",
+        "Residents’ lounge",
+        "Co-working space",
+        "Gym",
+        "Fitness studio",
+        "Screening room"
+      ]
+    }
+  },
+  "5": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "E3 4BH",
+      "priceFrom": 660000,
+      "bedrooms": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "Bow Green offers suites and one, two and three-bedroom apartments set in five acres of landscaping in Bow. Residents’ facilities include indoor and outdoor pools, a gym, cinema, concierge and boxing club.",
+      "images": [
+        "https://www.berkeleygroup.co.uk/-/media/migration/berkeley-group/developments/bow-green/header-images/bow-green_mobile-header-image_18092026.ashx?rev=17ed74e0bb024defb827558856b8e848&hash=C115B2348A3D684510CA9DA665D4E5D0"
+      ],
+      "amenities": [
+        "Landscaped gardens",
+        "Swimming pools",
+        "Gym",
+        "Cinema",
+        "Concierge",
+        "Boxing club"
+      ]
+    }
+  },
+  "6": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "bedrooms": [
+        0,
+        1,
+        2
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "Peninsula Gardens is a collection of four brickwork buildings between the park and river on Greenwich Peninsula, with views towards the skyline and Central Park. The source advertises studios, one and two-bedroom apartments."
+    }
+  },
+  "8": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "SE18 6FR",
+      "priceFrom": 560000,
+      "bedrooms": [
+        2
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "Royal Arsenal Riverside offers riverside apartments in Woolwich, with private balconies and access to riverside paths. The development has an on-site Elizabeth line station and residents-only facilities including a spa, gym, pool and cinema.",
+      "images": [
+        "https://www.berkeleygroup.co.uk/-/media/migration/berkeley-group/developments/royal-arsenal-riverside/headers/royal-arsenal-riverside_mobile-header-image_28-05-2024.ashx?rev=01d05b62035e424cb8b1754fb3a6a92b&hash=E43A806FC0736BBB4EF703F579A740DB"
+      ],
+      "amenities": [
+        "Private balconies",
+        "Spa",
+        "Gym",
+        "Swimming pool",
+        "Cinema"
+      ]
+    }
+  },
+  "11": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "description": "Hurlingham Waterfront is a collection of 224 apartments along the river in Fulham.",
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "images": [
+        "https://hurlinghamwaterfront.co.uk/wp-content/uploads/2023/03/4137_Hurlingham-Waterfront_Ext_103_Hero_Riverwalk_FINAL_JG.jpg"
+      ]
+    }
+  },
+  "12": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "SW6 3DS",
+      "bedrooms": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments",
+        "Penthouses"
+      ],
+      "description": "Hurlingham Place offers suites, apartments and penthouses in Fulham, close to The Hurlingham Club and the River Thames. Facilities include a concierge, fitness studio, co-working space and underground parking.",
+      "amenities": [
+        "Concierge",
+        "Fitness studio",
+        "Co-working space",
+        "Underground parking"
+      ],
+      "status": "Coming soon"
+    }
+  },
+  "13": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "priceFrom": 370000,
+      "description": "The Brentford Project is a waterside residential quarter reconnecting Brentford High Street with the waterfront. New apartments are set among lanes, yards, shops and places to eat, with residents’ facilities at The Wick.",
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "amenities": [
+        "Residents’ club",
+        "Waterside setting"
+      ]
+    }
+  },
+  "15": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "bedrooms": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "propertyTypes": [
+        "Apartments",
+        "Penthouses"
+      ],
+      "description": "Holland Park Gate offers private residences on High Street Kensington, opposite Holland Park. Homes are complemented by a dedicated residents’ team, 24-hour concierge and security, landscaped gardens and a Health Club & Spa.",
+      "images": [
+        "https://images.squarespace-cdn.com/content/v1/642150ac140c93442262b046/67cf93f6-0d05-49f4-a142-c189be77d357/holland-park-gate-private-residence-dining-room-kensington-london"
+      ],
+      "amenities": [
+        "24-hour concierge",
+        "Security",
+        "Landscaped gardens",
+        "Health club",
+        "Spa"
+      ]
+    }
+  },
+  "16": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "HA0 1NW",
+      "priceFrom": 375000,
+      "bedrooms": [
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "Grand Union is a canalside neighbourhood in Wembley, offering homes among landscaped gardens and waterside walkways. Residents’ facilities include a bowling alley, lounge, co-working spaces and meeting rooms, with a concierge and on-site gym.",
+      "images": [
+        "https://www.berkeleygroup.co.uk/-/media/migration/berkeley-group/developments/grand-union/grand-union_mobile-header-update_09012023.ashx?rev=d07e430532f344a7b21e24b97ab84811&hash=5511F0D387593B22C95833DCC58940FC"
+      ],
+      "amenities": [
+        "Concierge",
+        "Bowling alley",
+        "Residents’ lounge",
+        "Co-working space",
+        "Gym",
+        "Landscaped gardens"
+      ]
+    }
+  },
+  "17": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "description": "Angel Gate is an office-to-residential conversion in Islington. The apartments follow a Japandi-inspired design, with Crittall-style panels, bespoke kitchens and carefully considered finishes.",
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "images": [
+        "https://www.story-developments.co.uk/wp-content/uploads/2025/05/Angel-Gate_Living-room_LR-uai-1032x688.jpg"
+      ]
+    }
+  },
+  "19": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "description": "The Stage is a residential tower in Shoreditch, offering apartments and residents’ facilities including a sky terrace, bowling alley, gym and two private cinemas.",
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "images": [
+        "https://www.thestageshoreditch.com/sites/default/files/2023-11/The%20Stage%20Homepage%20Inset%201200%20x%20800_1.jpg"
+      ],
+      "amenities": [
+        "Sky terrace",
+        "Bowling alley",
+        "Gym",
+        "Private cinemas"
+      ]
+    }
+  },
+  "22": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "EC3A 7AB",
+      "lat": 51.516513,
+      "lng": -0.080836,
+      "priceFrom": 995000,
+      "bedrooms": [
+        1
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "The Sky Residences at One Bishopsgate Plaza offer private homes above a five-star hotel in the City of London. Facilities include a concierge, private lounge and library, gym, swimming pool, treatment rooms and a level 34 sky terrace.",
+      "images": [
+        "https://assets.savills.com/properties/GBLHRDLAD191429/LAD191429_61_m_gal.jpg"
+      ],
+      "amenities": [
+        "Concierge",
+        "Residents’ lounge",
+        "Library",
+        "Gym",
+        "Swimming pool",
+        "Sky terrace"
+      ]
+    }
+  },
+  "23": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "SE3 9FW",
+      "priceFrom": 387500,
+      "bedrooms": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "propertyTypes": [
+        "Apartments",
+        "Houses"
+      ],
+      "description": "Kidbrooke Village offers homes in the Royal Borough of Greenwich, surrounded by parkland, with an on-site station and local shops and places to eat. Homes and residents’ facilities vary by phase; confirm the facilities included with the selected home.",
+      "images": [
+        "https://www.berkeleygroup.co.uk/-/media/migration/berkeley-group/developments/kidbrooke-village/kidbrooke-village_header-mobile-update_08042024.ashx?rev=de093152d4a44af882e87061faf24440&hash=E1B71F595ED1010B05890CB843546E94"
+      ]
+    }
+  },
+  "24": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "description": "Vabel Blackheath is a collection of 43 apartments with brick detailing, arches and landscaped gardens. A rooftop provides space to relax with views across the London skyline.",
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "amenities": [
+        "Landscaped gardens",
+        "Rooftop space"
+      ]
+    }
+  },
+  "27": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "W2 4DF",
+      "priceFrom": 1225000,
+      "bedrooms": [
+        1,
+        2
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "18 Porchester Gardens is a boutique collection of 36 restored residences in Bayswater, with one and two-bedroom apartments. Classical architecture is complemented by interiors by Albion Nord, generous proportions and large windows. Residents have access to amenities at The Whiteley and Six Senses London, subject to the terms of the selected home.",
+      "images": [
+        "https://assets.savills.com/properties/GBLHRDLAD221048/LAD221048_64_m_gal.jpg"
+      ]
+    }
+  },
+  "28": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "W2 4YN",
+      "description": "The Whiteley is a collection of residences and townhouses on Queensway in Bayswater.",
+      "propertyTypes": [
+        "Apartments",
+        "Townhouses"
+      ]
+    }
+  },
+  "31": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "priceFrom": 381500,
+      "bedrooms": [
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments",
+        "Penthouses"
+      ],
+      "description": "Cerulean Quarter offers one, two and three-bedroom apartments and penthouses in Canning Town, with balconies, city skyline views and landscaped outdoor space. The development is close to Canning Town station.",
+      "amenities": [
+        "Balconies",
+        "Landscaped outdoor space"
+      ]
+    }
+  },
+  "32": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "E3 2PS",
+      "lat": 51.539772,
+      "lng": -0.023021,
+      "priceFrom": 399000,
+      "bedrooms": [
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "Hertford Mill is a collection of apartments on Fish Island in Hackney Wick. Homes feature open-plan kitchen and dining spaces, floor-to-ceiling windows and well-considered storage, with landscaped communal podium gardens.",
+      "images": [
+        "https://www.taylorwimpey.co.uk/-/twdxmedia/Images/Business-Units/London/Sales/Hertford-Mill/Development-gallery/01-Block-A-Welcome-to-Hertford-Mill.jpg"
+      ],
+      "amenities": [
+        "Communal podium gardens",
+        "Open-plan living",
+        "Floor-to-ceiling windows"
+      ]
+    }
+  },
+  "33": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "E14 0LL",
+      "lat": 51.517061,
+      "lng": -0.007355,
+      "priceFrom": 399000,
+      "bedrooms": [
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "Rivermark offers apartments in Poplar, inspired by the area’s industrial heritage. Original tramway arches are incorporated into one building, while three cylindrical towers face the river. Landscaped courtyard gardens and an enhanced riverside walkway provide outdoor space.",
+      "images": [
+        "https://www.taylorwimpey.co.uk/-/twdxmedia/Images/Business-Units/London/Sales/Rivermark-Poplar/CGIs/External/61752_TWL_Rivermark_Poplar_Brochure_JA_v6_1.jpg"
+      ],
+      "amenities": [
+        "Courtyard gardens",
+        "Riverside walkway"
+      ]
+    }
+  },
+  "34": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "E10 5UJ",
+      "lat": 51.558723,
+      "lng": -0.012388,
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "Coronation Square is a new neighbourhood in Leyton, with apartments arranged around communal courtyards and landscaped outdoor spaces.",
+      "amenities": [
+        "Communal courtyards",
+        "Landscaped outdoor space"
+      ]
+    }
+  },
+  "35": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "N12 0DA",
+      "lat": 51.61136,
+      "lng": -0.17557,
+      "priceFrom": 320000,
+      "description": "The Tramworks is a development in North Finchley, close to local shops, cafés and transport connections. Residents’ facilities include a concierge and co-working space.",
+      "images": [
+        "https://www.taylorwimpey.co.uk/-/twdxmedia/Images/Business-Units/North-Thames/Sales/The-Tramworks/External-Photography-Oct-2026/East-West-Bridge-Apartments-4.jpg"
+      ],
+      "amenities": [
+        "Concierge",
+        "Co-working space"
+      ]
+    }
+  },
+  "37": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "SW19 7NS",
+      "lat": 51.4203532,
+      "lng": -0.2068717,
+      "priceFrom": 487500,
+      "bedrooms": [
+        0,
+        1,
+        2
+      ],
+      "propertyTypes": [
+        "Apartments",
+        "Penthouses"
+      ],
+      "description": "Wimbledon Bridge House offers studio, one and two-bedroom apartments and penthouses in the heart of Wimbledon, moments from the station. Homes are complemented by social and wellness amenities."
+    }
+  },
+  "39": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "bedrooms": [
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "W1 Place offers one, two and three-bedroom apartments on Great Portland Street, between Marylebone and Fitzrovia."
+    }
+  },
+  "40": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "W1U 4FA",
+      "propertyTypes": [
+        "Apartments",
+        "Penthouses"
+      ],
+      "description": "Marylebone Square is a collection of 54 apartments above boutiques, restaurants and community space. A five-level glass-canopied courtyard brings light and air into the heart of the building."
+    }
+  },
+  "45": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "SE11 5QY",
+      "priceFrom": 555000,
+      "bedrooms": [
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments",
+        "Penthouses"
+      ],
+      "description": "Oval Village offers apartments and penthouses close to the Kia Oval and the Nine Elms regeneration area. Residents’ facilities at The 1847 Club include a swimming pool, gym, cinema and lounge.",
+      "amenities": [
+        "Swimming pool",
+        "Gym",
+        "Cinema",
+        "Residents’ lounge"
+      ]
+    }
+  },
+  "46": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "bedrooms": [
+        1,
+        2
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "The Hexon is a 36-storey residential building in Nine Elms, with a concierge, gym and communal space for work and entertaining on the 35th floor.",
+      "amenities": [
+        "Concierge",
+        "Gym",
+        "Co-working space",
+        "Communal entertaining space"
+      ]
+    }
+  },
+  "47": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "TW2 6SP",
+      "lat": 51.44622115191503,
+      "lng": -0.34146532860455897,
+      "priceFrom": 1000000,
+      "bedrooms": [
+        3,
+        4
+      ],
+      "propertyTypes": [
+        "Houses"
+      ],
+      "description": "Twickenham Green offers three and four-bedroom houses at Bakers Mews, with generous living spaces, private gardens and electric vehicle charging. Local schools, green spaces and transport connections are close by.",
+      "images": [
+        "https://londonsquare.co.uk/images/uploads/developments/Twick-Green-Thumbnail.jpg"
+      ],
+      "amenities": [
+        "Private gardens",
+        "Electric vehicle charging"
+      ]
+    }
+  },
+  "49": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "SE1 5EB",
+      "lat": 51.494861,
+      "lng": -0.077808,
+      "bedrooms": [
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "London Square Bermondsey offers apartments near Bermondsey Street, complemented by a residents’ gym and concierge, with independent restaurants, galleries and green spaces nearby.",
+      "images": [
+        "https://londonsquare.co.uk/images/uploads/developments/bermondsey-thumb-543-381.jpg"
+      ],
+      "amenities": [
+        "Gym",
+        "Concierge"
+      ]
+    }
+  },
+  "50": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "TW2 7SL",
+      "lat": 51.4513874,
+      "lng": -0.3395779,
+      "priceFrom": 500000,
+      "bedrooms": [
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments",
+        "Houses"
+      ],
+      "description": "Twickenham Square offers apartments and three-bedroom townhouses in the heart of Twickenham, close to independent shops, restaurants, green spaces and transport connections. Selected townhouses form the Energy Smart Collection.",
+      "images": [
+        "https://londonsquare.co.uk/images/uploads/developments/TwickSquare-Thumbnail-543x381.jpg"
+      ]
+    }
+  },
+  "51": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "priceFrom": 2500000,
+      "bedrooms": [
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments",
+        "Penthouses"
+      ],
+      "description": "Westminster Tower is a collection of thirty residences overlooking the River Thames and Parliament, including two and three-bedroom homes and penthouses."
+    }
+  },
+  "52": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "priceFrom": 1100000,
+      "bedrooms": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "propertyTypes": [
+        "Apartments",
+        "Penthouses"
+      ],
+      "description": "Ransome’s Wharf is a collection of apartments and duplex penthouses in a historic dock setting in Battersea, with a waterside plaza and private parking.",
+      "amenities": [
+        "Waterside plaza",
+        "Private parking"
+      ]
+    }
+  },
+  "53": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "SE18 6ED",
+      "lat": 51.48933,
+      "lng": 0.066963,
+      "priceFrom": 415000,
+      "bedrooms": [
+        1,
+        2
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "London Square Woolwich offers one and two-bedroom apartments in Woolwich, with contemporary interiors and connections across London.",
+      "images": [
+        "https://londonsquare.co.uk/images/uploads/developments/Woolwich_-543x381.jpg"
+      ]
+    }
+  },
+  "54": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "CR0 2RB",
+      "lat": 51.37808,
+      "lng": -0.10226,
+      "priceFrom": 340000,
+      "bedrooms": [
+        1,
+        2
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "Pearson Building offers apartments in Croydon, with a concierge, landscaped terraces and a residents’ lounge. The high-street location provides access to West Croydon and East Croydon stations.",
+      "images": [
+        "https://londonsquare.co.uk/images/uploads/developments/Croydon_External_543x381.jpg"
+      ],
+      "amenities": [
+        "Concierge",
+        "Landscaped terraces",
+        "Residents’ lounge"
+      ]
+    }
+  },
+  "55": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "SW17 0LP",
+      "lat": 51.43971447598933,
+      "lng": -0.17221970165615302,
+      "priceFrom": 550000,
+      "bedrooms": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "propertyTypes": [
+        "Apartments",
+        "Houses"
+      ],
+      "description": "London Square Wandsworth Common combines one, two and three-bedroom apartments with four and five-bedroom houses beside a 32-acre park.",
+      "images": [
+        "https://londonsquare.co.uk/images/uploads/developments/wwcthumb.jpg"
+      ]
+    }
+  },
+  "57": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "KT14 6EX",
+      "lat": 51.3368415,
+      "lng": -0.4983321,
+      "priceFrom": 799000,
+      "bedrooms": [
+        2,
+        3,
+        4
+      ],
+      "propertyTypes": [
+        "Houses"
+      ],
+      "description": "Broadoaks Park is an established Surrey address in West Byfleet, with two, three and four-bedroom family houses set among 25 acres of parkland. This is a named exception to the portfolio’s usual London coverage.",
+      "images": [
+        "https://londonsquare.co.uk/images/uploads/developments/result_Broadoaks_Park_External_Hero_Image_%281%29.jpg"
+      ]
+    }
+  },
+  "58": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "SW6 1RX",
+      "lat": 51.4867907,
+      "lng": -0.1998185,
+      "priceFrom": 600000,
+      "bedrooms": [
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments",
+        "Penthouses"
+      ],
+      "description": "Lillie Square offers apartments, garden duplexes and penthouses in West London, with landscaped gardens and a residents’ clubhouse including a pool, gym, spa and cinema.",
+      "images": [
+        "https://londonsquare.co.uk/images/uploads/developments/lille-square-543-381.jpg"
+      ],
+      "amenities": [
+        "Landscaped gardens",
+        "Residents’ clubhouse",
+        "Swimming pool",
+        "Gym",
+        "Spa",
+        "Cinema"
+      ]
+    }
+  },
+  "60": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "bedrooms": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "The Broadley is a new residential address in Marylebone, close to St John’s Wood, Maida Vale and Regent’s Park, with private residents’ facilities and landscaped spaces."
+    }
+  },
+  "61": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "bedrooms": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "The Edit is a residential development in Southwark, with homes along the Low Line and private facilities at No9 Residents Club.",
+      "amenities": [
+        "24-hour concierge",
+        "Gym",
+        "Sauna",
+        "Ice bath"
+      ]
+    }
+  },
+  "63": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "bedrooms": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "Queen’s Cross is a residential development near Royal Victoria Dock and the Elizabeth line, with landscaped gardens, a private residents’ club and rooftop running track.",
+      "amenities": [
+        "Landscaped gardens",
+        "Residents’ club",
+        "Rooftop running track",
+        "Concierge",
+        "Gym"
+      ]
+    }
+  },
+  "74": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "E16 4DA",
+      "priceFrom": 527500,
+      "bedrooms": [
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "TwelveTrees Park is a residential neighbourhood in West Ham, planned around open green space and new retail and commercial facilities. Residents’ facilities include a concierge, gym and co-working space.",
+      "amenities": [
+        "Concierge",
+        "Gym",
+        "Co-working space"
+      ]
+    }
+  },
+  "81": {
+    "reviewedAt": "2026-10-27",
+    "data": {
+      "postcode": "SW11 8QN",
+      "priceFrom": 1020000,
+      "bedrooms": [
+        1,
+        2,
+        3
+      ],
+      "propertyTypes": [
+        "Apartments"
+      ],
+      "description": "Parkside Collection at Chelsea Bridge Wharf offers apartments beside Battersea Park, close to Battersea Power Station and the Thames. Homes include private balconies or terraces.",
+      "amenities": [
+        "Private balconies or terraces"
+      ]
+    }
+  }
+}

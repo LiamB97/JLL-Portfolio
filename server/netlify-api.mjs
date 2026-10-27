@@ -1,3 +1,4 @@
+import {pendingInputService} from './pending-input.mjs';
 import {recordStaff,touchStaff,initializeActivity,engagementService,activityReport} from './activity.mjs';
 import {translations as defaultTranslations} from './translations.mjs';
 import {staffGuide} from './staff-guide.mjs';
@@ -14,8 +15,9 @@ import {fetchSource} from './sync.mjs';
 import {ConflictError,refreshPortfolio} from './netlify-store.mjs';
 const reviewedDevelopment=raw=>{try{return validateDevelopment(raw);}catch(e){throw new AccessError(e.message);}};
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
-export function createNetlifyApi({repository,password,fetchListings=fetchSource,extract=extractListing,network,connections,translations=defaultTranslations,visitorRepository}){
+export function createNetlifyApi({repository,password,fetchListings=fetchSource,extract=extractListing,network,connections,translations=defaultTranslations,visitorRepository,pendingOptions}){
  const access=accessService(repository,password);
+ const pending=pendingInputService(repository,pendingOptions);
  visitorRepository||={readDay:async date=>(await repository.read()).buyerActivityDays?.[date]||{people:{}},updateDay:async(date,change)=>repository.update(s=>{s.buyerActivityDays||={};s.buyerActivityDays[date]||={people:{}};change(s.buyerActivityDays[date]);})};
  const engagement=engagementService(visitorRepository);
  return async(request)=>{
@@ -40,6 +42,20 @@ export function createNetlifyApi({repository,password,fetchListings=fetchSource,
    const actor=await access.authenticate(request);
    if(!['GET','HEAD'].includes(method))access.csrf(request,actor);
    if(method==='POST'&&route==='/api/admin/login')return json({ok:true});
+   if(route==='/api/admin/pending-input'||route.startsWith('/api/admin/pending-input/')){
+    const check=state=>access.stock(access.current(state,actor));check(await repository.read());
+    if(actor.legacy)throw new AccessError('Create a staff account to use Pending input.',409);
+    const parts=route.slice('/api/admin/pending-input'.length).split('/').filter(Boolean),id=parts[0],action=parts[1];
+    if(method==='GET'&&!id)return json(await pending.list(check));
+    if(method==='GET'&&id&&!action)return json(await pending.get(id,check));
+    if(!['POST','PUT'].includes(method))throw new AccessError('Pending input action not found.',404);
+    const text=await request.text();if(Buffer.byteLength(text)>100000)throw new AccessError('Pending input exceeds the 100KB limit.',413);
+    let body;try{body=JSON.parse(text);}catch{throw new AccessError('Send valid pending input data.');}
+    if(method==='PUT'&&id&&!action)return json(await pending.save(id,body,check,actor));
+    if(method==='POST'&&id&&['extract','archive','publish'].includes(action))return json(await pending[action](id,body,check,actor));
+    throw new AccessError('Pending input action not found.',404);
+   }
+
    if(method==='GET'&&route==='/api/admin/activity'){const state=await repository.read();access.admin(access.current(state,actor));return json(await activityReport(state,visitorRepository,url.searchParams));}
    if(method==='POST'&&route==='/api/admin/heartbeat'){if(actor.legacy)throw new AccessError('Sign in with a staff account.',401);const s=await repository.read();const last=s.activity?.people?.[actor.id]?.lastActivityAt;if(!last||Date.now()-Date.parse(last)>=5*60000)await repository.update(state=>touchStaff(state,access.current(state,actor)));return json({ok:true});}
    if(method==='GET'&&route==='/api/admin/guide')return json(staffGuide(actor.role));

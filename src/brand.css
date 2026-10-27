@@ -260,3 +260,39 @@ html[data-theme=dark] :is(a,button).whatsapp-action,html[data-theme=dark] .broke
  .explorer-header .preferences-panel{position:fixed;top:120px;inset-inline:14px;width:auto;max-width:360px;margin-inline-start:auto;max-height:calc(100svh - 140px);overflow:auto}
  .admin-active .explorer-header .preferences-panel,.explorer-header:has(.how-link[aria-current=page]) .preferences-panel{top:78px;max-height:calc(100svh - 98px)}
 }
+
+/* Shared, unpublished work from the sales team's development list. */
+.pending-workspace .eyebrow{display:flex;align-items:center;gap:8px}
+.pending-counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:24px 0}
+.pending-counts>span{display:flex;flex-direction:column;gap:5px;padding:18px;border:1px solid var(--line);border-radius:6px;font-size:12px;background:var(--surface)}
+.pending-counts strong{font-size:28px;font-weight:500;line-height:1.2}
+.pending-filters{display:grid;grid-template-columns:minmax(0,2fr) minmax(150px,1fr) auto;gap:16px;align-items:end;margin:24px 0 14px}
+.pending-filters>label{margin:0}
+.pending-search{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:4px;padding:0 12px;height:44px;background:var(--surface)}
+.pending-search>svg{flex-shrink:0}
+.pending-workspace .pending-search input{height:42px;min-height:0;padding:8px 0;border:0;background:transparent;min-width:0}
+.pending-filters .pending-mine{display:flex;flex-direction:row;align-items:center;gap:8px;min-height:44px}
+.pending-mine input{width:16px;height:16px;min-height:0;flex-shrink:0}
+.pending-result-count{font-size:12px;color:var(--muted);margin:0 0 20px}
+.pending-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.pending-list .pending-card{margin:0;min-width:0}
+.pending-card-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.staff-portal .pending-card-heading h2{margin:0;font-size:20px;display:block;overflow-wrap:anywhere}
+.pending-card-heading p{margin:6px 0 0}
+.pending-status{flex-shrink:0;font-size:11px;line-height:1.5;border:1px solid var(--line);border-radius:5px;padding:5px 8px;max-width:45%}
+.status-needs_input{background:var(--sand);color:var(--midnight);border-color:var(--sand)}
+.status-ready_review{background:var(--space);color:var(--white);border-color:var(--space)}
+.pending-needs,.pending-review-notes,.pending-review-panel>ul{font-size:12px;line-height:1.8;padding-inline-start:20px;margin:14px 0}
+.pending-needs li,.pending-review-panel li{margin-bottom:5px}
+.pending-special,.pending-team-note{border-inline-start:3px solid var(--accent);padding:9px 12px;background:var(--surface);white-space:pre-wrap;overflow-wrap:anywhere}
+.pending-card>.action-row{margin-top:18px}
+.pending-assignment{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:20px;align-items:start}
+.pending-assignment textarea{width:100%;font:inherit;line-height:1.6;padding:12px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);resize:vertical}
+.pending-review-panel a,.pending-review-panel p{overflow-wrap:anywhere}
+.pending-workspace .admin-grid.pending-editor{grid-template-columns:minmax(0,1fr)}
+.pending-workspace .back-link{margin-bottom:20px}
+.pending-required{font-weight:500}
+@media(max-width:1000px){.pending-list{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:760px){.pending-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.pending-filters .pending-mine{grid-column:1/-1}.pending-assignment{grid-template-columns:minmax(0,1fr);gap:0}.pending-card-heading{flex-wrap:wrap}.staff-portal .pending-card-heading h2{font-size:20px}}
+@media(max-width:480px){.pending-filters{grid-template-columns:minmax(0,1fr)}.pending-counts{gap:8px}.pending-counts>span{padding:12px 8px;font-size:11px}.pending-counts strong{font-size:24px}.pending-status{max-width:100%}}
+.image-picker button[aria-pressed=true],html[data-theme=dark] .image-picker button[aria-pressed=true]{background:var(--selected-bg);color:var(--ink);border-color:var(--line)}

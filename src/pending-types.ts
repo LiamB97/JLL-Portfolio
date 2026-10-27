@@ -1,0 +1,4 @@
+export interface PendingIssue {field:string;message:string;kind:'input'|'review'}
+export interface PendingEntry {id:string;row:number;requestedName:string;name:string;area:string;status:'needs_input'|'ready_review'|'listed'|'published'|'not_required';issues:PendingIssue[];notes:string[];sourceUrls:string[];sourceStatus:string;attempts:{url:string;status:string;error?:string}[];version:number;updatedAt:string;collectedAt?:string;locationNote?:string;teamNote:string;assignedTo:string|null;assigneeName:string;publishedId:string|null;publishedName:string|null;imageCount:number;priceFrom:number|null;coverageException:boolean;data?:Record<string,unknown>}
+export interface PendingAssignee {id:string;name:string;role:string}
+export interface PendingReport {batchId:string;title:string;collectedAt:string|null;entries:PendingEntry[];assignees:PendingAssignee[]}
