@@ -10,3 +10,4 @@ test('translation caches invalidate when source copy changes and prefer reviewed
  assert.notEqual(translationKey(d,'tr'),translationKey({...d,description:'Changed'},'tr'));await service({...d,description:'Changed'},'tr');assert.equal(calls,2);
  const manual=await service({...d,translations:{ar:{description:'نص معتمد',amenities:[]}}},'ar');assert.equal(manual.source,'Staff translation');assert.equal(calls,2);
 });
+test('temporary cache failures never hide a successful translation',async()=>{const service=translationsService({read:()=>{throw Error('Cache unavailable');},write:()=>{throw Error('Cache unavailable');},translate:async()=> 'Çeviri'});const r=await service({...samples[0],amenities:[]},'tr');assert.equal(r.description,'Çeviri');});

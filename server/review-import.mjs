@@ -1,3 +1,4 @@
+import {postcodeLocation} from './location.mjs';
 import {extractListing} from './import.mjs';
 import {fetchSource,convertSource} from './sync.mjs';
 const path=value=>{try{const u=new URL(value);return u.hostname+u.pathname.replace(/\/$/,'').toLowerCase();}catch{return '';}};
@@ -12,5 +13,6 @@ export async function importForReview(url,existing,{extract=extractListing,fetch
    throw first;
   }
  }
- return {development:await extract(u.href),warning:'Unpublished draft. Check every field and photo; remove third-party branding, contact details and sales language before publishing.',source:'Source website'};
+ const development=await extract(u.href);let locationNote='';if((development.lat===null||development.lng===null)&&development.postcode){try{const point=await postcodeLocation(development.postcode);development.lat=point.lat;development.lng=point.lng;locationNote=' '+point.note;}catch{}}
+ return {development,warning:'Unpublished draft. Check every field and photo; remove third-party branding, contact details and sales language before publishing.'+locationNote,source:'Source website'};
 }
