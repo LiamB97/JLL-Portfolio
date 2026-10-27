@@ -1,4 +1,5 @@
 import {useCallback,useEffect,useState} from 'react';
+import {track} from './analytics';
 import dictionary from './locales.json';
 import type {Language} from './i18n';
 import type {Development} from './types';
@@ -9,7 +10,7 @@ export function useFavourites(){
  const [persistent,setPersistent]=useState(true);
  useEffect(()=>{try{localStorage.setItem(KEY,JSON.stringify(ids));setPersistent(true);}catch{setPersistent(false);}},[ids]);
  useEffect(()=>{const changed=(event:StorageEvent)=>{if(event.key===KEY)setIds(parse(event.newValue));};window.addEventListener('storage',changed);return()=>window.removeEventListener('storage',changed);},[]);
- const toggle=useCallback((id:string)=>setIds(old=>old.includes(id)?old.filter(x=>x!==id):[...old,id].slice(0,200)),[]);
+ const toggle=useCallback((id:string)=>{track(ids.includes(id)?'favourite_remove':'favourite_add',{development_id:id});setIds(old=>old.includes(id)?old.filter(x=>x!==id):[...old,id].slice(0,200));},[ids]);
  return {ids,toggle,persistent,clear:()=>setIds([])};
 }
 export function developmentLink(origin:string,id:string,collection?:string,broker?:string){const url=new URL('/',origin);url.searchParams.set('development',id);if(collection)url.searchParams.set('collection',collection);else if(broker)url.searchParams.set('broker',broker);return url.href;}

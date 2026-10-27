@@ -1,4 +1,6 @@
 import {translations as defaultTranslations} from './translations.mjs';
+import {staffGuide} from './staff-guide.mjs';
+import {analyticsConfiguration,validateAnalyticsConfiguration} from './analytics-config.mjs';
 import {importForReview} from './review-import.mjs';
 import {postcodeLocation} from './location.mjs';
 import {parsePastedListing} from './pasted-import.mjs';
@@ -16,6 +18,7 @@ export function createNetlifyApi({repository,password,fetchListings=fetchSource,
  return async(request)=>{
   const url=new URL(request.url);const route=url.pathname.replace(/^\/\.netlify\/functions\/api/,'/api');const method=request.method;
   try{
+   if(method==='GET'&&route==='/api/analytics-config')return json(analyticsConfiguration(await repository.read()));
    if(method==='GET'&&route==='/api/health'){await repository.read();return json({ok:true});}
    if(method==='GET'&&route==='/api/developments')return json((await repository.read()).developments.map(publicDevelopment));
    if(method==='GET'&&route.startsWith('/api/brokers/'))return json(await access.publicBroker(decodeURIComponent(route.slice('/api/brokers/'.length))));
@@ -33,6 +36,8 @@ export function createNetlifyApi({repository,password,fetchListings=fetchSource,
    const actor=await access.authenticate(request);
    if(!['GET','HEAD'].includes(method))access.csrf(request,actor);
    if(method==='POST'&&route==='/api/admin/login')return json({ok:true});
+   if(method==='GET'&&route==='/api/admin/guide')return json(staffGuide(actor.role));
+   if(method==='GET'&&route==='/api/admin/analytics'){access.admin(actor);return json(analyticsConfiguration(await repository.read(),{privateView:true}));}
    if(route==='/api/admin/drafts'){access.stock(actor);if(method==='GET')return json(((await repository.read()).drafts||[]).filter(d=>actor.role==='admin'||d.ownerId===actor.id));}
    if(method==='DELETE'&&route.startsWith('/api/admin/drafts/')){access.stock(actor);return json(await repository.update(s=>{const acting=access.current(s,actor);access.stock(acting);const id=route.slice('/api/admin/drafts/'.length),d=(s.drafts||[]).find(d=>d.id===id);if(!d)throw new AccessError('Draft not found.',404);if(acting.role!=='admin'&&d.ownerId!==actor.id)throw new AccessError('You can only remove your own drafts.',403);s.drafts=s.drafts.filter(d=>d.id!==id);return {ok:true};}));}
    if(method==='GET'&&route==='/api/admin/invites')return json(await access.invites(actor));
@@ -51,6 +56,7 @@ export function createNetlifyApi({repository,password,fetchListings=fetchSource,
    if(Number(request.headers.get('content-length')||0)>2_000_000)return json({error:'Import exceeds the 2MB limit.'},413);
    const text=await request.text();if(Buffer.byteLength(text)>2_000_000)return json({error:'Import exceeds the 2MB limit.'},413);
    let body;try{body=JSON.parse(text);}catch{return json({error:'Request must contain valid JSON.'},400);}
+   if(method==='PUT'&&route==='/api/admin/analytics'){access.admin(actor);let settings;try{settings=validateAnalyticsConfiguration(body);}catch(e){throw new AccessError(e.message);}return json(await repository.update(state=>{access.admin(access.current(state,actor));state.analytics=settings;return analyticsConfiguration(state,{privateView:true});}));}
    if(method==='POST'&&route==='/api/admin/profile')return json(await access.updateProfile(actor,body));
    if(method==='POST'&&route==='/api/admin/drafts'){access.stock(actor);if(!body||typeof body.data!=='object'||!body.data)throw new AccessError('A draft needs development data.');return json(await repository.update(s=>{const acting=access.current(s,actor);access.stock(acting);s.drafts||=[];let d=body.id?s.drafts.find(d=>d.id===body.id):null;if(body.id&&!d)throw new AccessError('Draft no longer exists. Save a new draft.',404);if(d&&acting.role!=='admin'&&d.ownerId!==actor.id)throw new AccessError('You can only edit your own drafts.',403);if(!d){if(s.drafts.length>=200)throw new AccessError('Remove an old draft before adding another.');d={id:randomBytes(12).toString('hex'),ownerId:actor.id};s.drafts.push(d);}d.data=structuredClone(body.data);d.editingId=typeof body.editingId==='string'?body.editingId:null;d.name=String(body.name||'Untitled development').slice(0,100);d.updatedAt=new Date().toISOString();return structuredClone(d);}),201);}
    if(method==='POST'&&route==='/api/admin/users/invite')return json(await access.invite(actor,body),201);

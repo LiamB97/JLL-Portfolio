@@ -1,6 +1,6 @@
 # JLL London residential portfolio
 
-A first working prototype: one shared, London-only portfolio for brokers to send to buyers. React/TypeScript + Vite, Leaflet + MapLibre vector map, Express API and persistent SQLite storage. No buyer accounts or enquiry forms. Destinations entered in development details are not saved in the portfolio database.
+A first working prototype: one shared, London-only portfolio for brokers to send to buyers. React/TypeScript + Vite, Leaflet + MapLibre vector map, Express API and persistent SQLite storage. No buyer accounts or enquiry forms. Destinations entered in development details are not saved in the portfolio database. Optional GA4 usage analytics requires visitor consent.
 
 ## Run
 
@@ -99,12 +99,34 @@ Signed-in staff can copy a personal portfolio URL (`?broker=<opaque slug>`) afte
 
 The public broker lookup exposes only the display name, WhatsApp number and opaque share slug to someone holding the corresponding link; staff email, role, internal ID and account records remain private. There is no public broker directory or recipient chosen from whoever happens to be signed in on the buyer’s browser. Disabled users’ personal and collection links stop resolving. Updating a broker’s number updates the contact shown on their existing links.
 
+## Buyer and staff guides
+
+The public header’s **How it works** link opens `#how-it-works`, a buyer guide available in all four languages. It explains map/list views, development details and starting prices, transport, local favourites, WhatsApp shortlists and preferences. Back-to-map links preserve any broker or collection query parameters.
+
+Signed-in staff have a separate **How it works** workspace tab. Its instructions are returned by authenticated `/api/admin/guide`, not embedded in the public buyer guide. Content follows the role: Brokers see sharing, collections, access and invitations; stock-management instructions are available to Admins/Broker admins; analytics instructions are Admin-only. Anonymous requests cannot read this guide.
+
+Development details use a labelled definition list for **Prices from**, **Bedrooms** and **Property type**. Desktop labels align across three columns; on mobile, price has its own row above bedroom/type fields. Both layouts support dark mode and Arabic direction without running text into the price.
+
+## Google Analytics 4
+
+An Admin can configure GA4 in **Manage → Analytics**. The integration is disabled by default and needs a public GA4 Measurement ID (`G-…`), not a password, API secret or Google Cloud project. Create a GA4 property in the Google account that should own reporting, add a Web stream for the live portfolio URL, and **switch Enhanced measurement off** in that stream before enabling the integration. Automatic outbound tracking can otherwise send WhatsApp URLs containing contact details/message text. The setup screen requires confirmation of that setting. The app emits selected events itself.
+
+Save the Measurement ID, confirm manual-only tracking and enable analytics. Settings persist privately alongside portfolio state and apply to new visits immediately, without a redeploy. Only Admins can read/change settings; Broker admins and Brokers cannot. The public config endpoint returns only enabled status and the active public Measurement ID. An Admin can disable analytics again from the same screen. A current open tab picks up saved changes on refresh; the Admin's own tab also receives the updated setting immediately.
+
+Visitors receive a translated **Accept analytics / Decline analytics** choice. The Google script, analytics cookies and event queue are not created before consent. This is basic consent gating, with no pre-consent Google/cookieless analytics pings. Preferences includes **Analytics preferences** while tracking is configured. Declining or withdrawing stops app events, disables the Google property, removes the script and clears GA cookies on the portfolio hostname. The choice lasts up to 180 days; no advertising/personalization or user-provided-data features are enabled. GA cookies are scoped to the portfolio hostname. Consent changes synchronize across tabs. Staff management and invitation routes are excluded, including when a visitor previously accepted analytics. Actual collector delivery can still be blocked by browser privacy tools.
+
+The tracked events are `page_view`, `development_view`, `favourite_add`, `favourite_remove`, `shortlist_open`, `shortlist_copy`, `whatsapp_click`, `portfolio_link_open`, `collection_open`, `view_change`, `filter_apply`, `search_used`, `language_change` and `web_vital`. Core Web Vitals report numeric LCP/INP/CLS values and quality ratings after opt-in. Only a development currently open when consent is given is counted; earlier clicks are not replayed. A WhatsApp click does **not** confirm that the buyer sent a message, made an enquiry or completed a sale.
+
+All app event parameters pass through an allowlist. Page URLs lose every query parameter and hash, and referrers are reduced to their origin. Search text/postcodes, journey destinations, email addresses, phone numbers, message text, collection titles and invitation tokens are not sent. Development IDs and verified opaque broker/collection link identifiers support attribution without sending staff contact data. No automatic click listener sends raw link URLs. Keep Enhanced measurement disabled in the GA stream to preserve that constraint.
+
+Use **Reports → Realtime** in GA4 to check setup and **Engagement → Events** for activity. Standard reports may take 24–48 hours. For broker/development breakdowns, create event-scoped custom dimensions for `development_id`, `broker_link_id`, `collection_id` and `surface`. For page-speed explorations, also register `metric_name` and `metric_rating` as dimensions and `metric_value` as an event-scoped custom metric. Filter by metric name: LCP/INP are milliseconds, CLS is unitless. Optionally mark `whatsapp_click` as a key event for contact intent; it still measures clicks rather than sent messages. Visitors who decline analytics or block Google are excluded from these counts. Analytics is not connected to any production GA property until the owner supplies/configures a Measurement ID.
+
 ## Network requirements
 
 JLL source pages: `digitalportfolio.live.jll.com`, `residential.jll.co.uk`.
 Browser vector styles/tiles/fonts: `tiles.openfreemap.org`; raster fallback: `tile.openstreetmap.org`. Backend transport and routing: `api.tfl.gov.uk`. The map opens full-screen by default; Split and List are optional header views. Nearby developments are clustered until zoomed in.
 JLL image hosting: `res.cloudinary.com`. Optional web fonts: `fonts.googleapis.com`, `fonts.gstatic.com` (system-font fallback exists).
-The Google Maps journey action opens `www.google.com` in the buyer's browser. Staff website imports need outbound HTTPS/DNS to each supplied public source host. Imported media URLs need their own source access. Automatic descriptions use `translate.googleapis.com`; optional postcode lookup uses `api.postcodes.io`. No-key services can be unavailable and have explicit fallback paths. Review those destinations when real listing media is available.
+The Google Maps journey action opens `www.google.com` in the buyer's browser. Staff website imports need outbound HTTPS/DNS to each supplied public source host. Imported media URLs need their own source access. Automatic descriptions use `translate.googleapis.com`; optional postcode lookup uses `api.postcodes.io`. No-key services can be unavailable and have explicit fallback paths. Opt-in GA4 uses `www.googletagmanager.com` and Google Analytics collection hosts; neither is contacted before analytics consent. Review those destinations when real listing media is available.
 
 ## Before public launch
 
