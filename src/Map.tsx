@@ -7,7 +7,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import * as maplibregl from 'maplibre-gl';
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import '@maplibre/maplibre-gl-leaflet';
-import {Landmark, Layers, TrainFront, AlertCircle, ChevronDown, X} from 'lucide-react';
+import {Landmark, Layers, TrainFront, AlertCircle, ChevronDown, X, SlidersHorizontal} from 'lucide-react';
 import {landmarks} from './explore';
 import {useLocale} from './i18n';
 import type {Development, TransportNetwork} from './types';
@@ -32,7 +32,7 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
   const markers=useRef<L.MarkerClusterGroup|null>(null), lines=useRef<L.LayerGroup|null>(null), stationLayer=useRef<L.LayerGroup|null>(null),featuredLayer=useRef<L.LayerGroup|null>(null);
   const [showLines,setShowLines]=useState(false),[showStations,setShowStations]=useState(false),[legend,setLegend]=useState(false),[failed,setFailed]=useState(false),[baseReady,setBaseReady]=useState(false);
   const landmarkLayer=useRef<L.LayerGroup|null>(null);
-  const [showLandmarks,setShowLandmarks]=useState(true);
+  const [showLandmarks,setShowLandmarks]=useState(true),[toolsOpen,setToolsOpen]=useState(false);
   const [lineFilter,setLineFilter]=useState<string[]>([]);
   const shownLines=useMemo(()=>network?.lines.filter(l=>!lineFilter.length||lineFilter.includes(l.id))||[],[network,lineFilter]);
   useEffect(()=>{
@@ -50,12 +50,12 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
     const styleTimeout=window.setTimeout(()=>{if(!vectorLoaded)rasterFallback();},12000);
     gl?.on('load',()=>{
       vectorLoaded=true;window.clearTimeout(styleTimeout);setFailed(false);setBaseReady(true);
-      const style=gl.getStyle();if(dark){for(const layer of style.layers){if(layer.type==='background')gl.setPaintProperty(layer.id,'background-color','#171c23');if(layer.type==='symbol'&&layer.layout?.['text-field']){gl.setPaintProperty(layer.id,'text-color','#aab5c2');gl.setPaintProperty(layer.id,'text-halo-color','#171c23');}if(layer.type==='fill'&&/^water/.test(layer.id))gl.setPaintProperty(layer.id,'fill-color','#1c3442');}}const source=Object.entries(style.sources).find(([,s])=>s.type==='vector')?.[0];
+      const style=gl.getStyle();if(dark){for(const layer of style.layers){if(layer.type==='background')gl.setPaintProperty(layer.id,'background-color','#131E29');if(layer.type==='symbol'&&layer.layout?.['text-field']){gl.setPaintProperty(layer.id,'text-color','#aab5c2');gl.setPaintProperty(layer.id,'text-halo-color','#131E29');}if(layer.type==='fill'&&/^water/.test(layer.id))gl.setPaintProperty(layer.id,'fill-color','#003E51');}}const source=Object.entries(style.sources).find(([,s])=>s.type==='vector')?.[0];
       if(!source)return;
       const universityFilter=['any',['==',['get','class'],'college'],['==',['get','class'],'university'],['==',['get','subclass'],'university']] as import('maplibre-gl').ExpressionSpecification;
       gl.addLayer({id:'london-university-points',type:'circle',source,'source-layer':'poi',minzoom:13,filter:universityFilter,paint:{'circle-radius':3,'circle-color':'#5a6890','circle-stroke-color':'#fff','circle-stroke-width':1}});
-      gl.addLayer({id:'london-university-labels',type:'symbol',source,'source-layer':'poi',minzoom:13,filter:universityFilter,layout:{'text-field':['coalesce',['get','name:en'],['get','name:latin'],['get','name']],'text-font':['Noto Sans Regular'],'text-size':12,'text-anchor':'left','text-offset':[.6,0],'text-max-width':13},paint:{'text-color':dark?'#b6bbd2':'#536183','text-halo-color':dark?'#20252d':'#fff','text-halo-width':2}});
-      gl.addLayer({id:'london-local-places',type:'symbol',source,'source-layer':'poi',minzoom:16,filter:['!',universityFilter],layout:{'text-field':['coalesce',['get','name:en'],['get','name:latin'],['get','name']],'text-font':['Noto Sans Regular'],'text-size':11,'text-max-width':12},paint:{'text-color':dark?'#a3ada6':'#8b938d','text-halo-color':dark?'#20252d':'#fff','text-halo-width':1.5}});
+      gl.addLayer({id:'london-university-labels',type:'symbol',source,'source-layer':'poi',minzoom:13,filter:universityFilter,layout:{'text-field':['coalesce',['get','name:en'],['get','name:latin'],['get','name']],'text-font':['Noto Sans Regular'],'text-size':12,'text-anchor':'left','text-offset':[.6,0],'text-max-width':13},paint:{'text-color':dark?'#b6bbd2':'#536183','text-halo-color':dark?'#1F2A35':'#fff','text-halo-width':2}});
+      gl.addLayer({id:'london-local-places',type:'symbol',source,'source-layer':'poi',minzoom:16,filter:['!',universityFilter],layout:{'text-field':['coalesce',['get','name:en'],['get','name:latin'],['get','name']],'text-font':['Noto Sans Regular'],'text-size':11,'text-max-width':12},paint:{'text-color':dark?'#a3ada6':'#8b938d','text-halo-color':dark?'#1F2A35':'#fff','text-halo-width':1.5}});
     });
     landmarkLayer.current=L.layerGroup().addTo(m);
     markers.current=L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:40,spiderfyOnMaxZoom:true,iconCreateFunction:cluster=>L.divIcon({html:`<span>${cluster.getChildCount()}</span>`,className:'development-cluster',iconSize:[42,42]})}).addTo(m);
@@ -76,7 +76,7 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
       marker.on('add',()=>marker.getElement()?.setAttribute('aria-label',`${d.name}${highlighted?', '+t('FEATURED'):''}${saved?', '+t('Saved to favourites'):''}`)).on('click',()=>onSelect(d.id)).addTo(highlighted||saved?featured:group);
     }
   },[items,selected,onSelect,featuredIds,favouriteIds,dark,t]);
-  useEffect(()=>{const m=map.current,group=landmarkLayer.current;if(!m||!group)return;function render(){group!.clearLayers();if(!showLandmarks||m!.getZoom()<12)return;for(const place of landmarks){const label=document.createElement('span');label.textContent=place.name;L.circleMarker([place.lat,place.lng],{pane:'landmarks',radius:3.5,color:'#8b7962',fillColor:'#fff',fillOpacity:1,weight:1.7}).bindTooltip(label,{permanent:m!.getZoom()>=13,direction:'right',offset:[5,0],className:'landmark-label'}).addTo(group!);}}render();m.on('zoomend',render);return()=>{m.off('zoomend',render);};},[showLandmarks,dark]);
+  useEffect(()=>{const m=map.current,group=landmarkLayer.current;if(!m||!group)return;function render(){group!.clearLayers();if(!showLandmarks||m!.getZoom()<12)return;for(const place of landmarks){const label=document.createElement('span');label.textContent=place.name;L.circleMarker([place.lat,place.lng],{pane:'landmarks',radius:3.5,color:dark?'#E0C6AD':'#131E29',fillColor:dark?'#131E29':'#fff',fillOpacity:1,weight:1.7}).bindTooltip(label,{permanent:m!.getZoom()>=13,direction:'right',offset:[5,0],className:'landmark-label'}).addTo(group!);}}render();m.on('zoomend',render);return()=>{m.off('zoomend',render);};},[showLandmarks,dark]);
   const framedFavourites=useRef(false);
   useEffect(()=>{if(!favouritesOnly){framedFavourites.current=false;return;}if(framedFavourites.current||!items.length||!map.current)return;const size=map.current.getSize();map.current.fitBounds(L.latLngBounds(items.map(d=>[d.lat,d.lng] as [number,number])),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(230,size.y*.35)],paddingBottomRight:[35,Math.min(65,size.y*.15)],maxZoom:14});framedFavourites.current=true;},[favouritesOnly,items,dark]);
   const framedCollection=useRef('');
@@ -85,7 +85,7 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
   useEffect(()=>{
     const group=lines.current;if(!group)return;group.clearLayers();if(!showLines)return;
     for(const line of shownLines) for(const path of line.paths){
-      L.polyline(path,{pane:'transportLines',color:dark?'#20252d':'#fff',weight:6,opacity:.9,interactive:false}).addTo(group);
+      L.polyline(path,{pane:'transportLines',color:dark?'#1F2A35':'#fff',weight:6,opacity:.9,interactive:false}).addTo(group);
       L.polyline(path,{pane:'transportLines',color:line.colour,weight:3.5,opacity:.9}).bindTooltip(line.name,{sticky:true}).addTo(group);
     }
   },[showLines,shownLines,dark]);
@@ -94,11 +94,12 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
     for(const station of network.stations){
       if(lineFilter.length&&!station.lineIds?.some(id=>lineFilter.includes(id)))continue;
       const colour=network.lines.find(l=>l.id===(lineFilter.find(id=>station.lineIds?.includes(id))||station.lineIds?.[0]))?.colour||'#596575';
-      L.circleMarker([station.lat,station.lng],{pane:'transportStations',radius:6,color:colour,fillColor:dark?'#20252d':'#fff',fillOpacity:1,weight:2.5}).bindTooltip(station.name).bindPopup(stationPopup(station,network)).addTo(group);
+      L.circleMarker([station.lat,station.lng],{pane:'transportStations',radius:6,color:colour,fillColor:dark?'#1F2A35':'#fff',fillOpacity:1,weight:2.5}).bindTooltip(station.name).bindPopup(stationPopup(station,network)).addTo(group);
     }
   },[showStations,network,lineFilter,dark]);
   return <div className="map-shell" data-map-ready={baseReady}>{!baseReady&&<div className="map-loading-indicator" role="status">{t("Loading London map…")}</div>}<div ref={el} className="map" aria-label={t("Map of London developments")}/>
-    <div className="map-controls"><button aria-pressed={showLandmarks} className={showLandmarks?'on':''} onClick={()=>setShowLandmarks(!showLandmarks)}><Landmark size={16}/> {t("Landmarks")}</button>
+    <button className="map-tools-toggle" aria-expanded={toolsOpen} aria-controls="map-tools-panel" onClick={()=>{setToolsOpen(!toolsOpen);if(toolsOpen)setLegend(false);}}><SlidersHorizontal size={16}/>{t('Map tools')}{toolsOpen?<X size={14}/>:<ChevronDown size={14}/>}</button>
+    <div id="map-tools-panel" className={toolsOpen?"map-controls tools-open":"map-controls"} role="group" aria-label={t('Map tools')}><button aria-pressed={showLandmarks} className={showLandmarks?'on':''} onClick={()=>setShowLandmarks(!showLandmarks)}><Landmark size={16}/> {t("Landmarks")}</button>
       <button aria-pressed={showStations} disabled={!network} className={showStations?'on':''} onClick={()=>{setShowStations(!showStations);if(!showStations)setShowLines(true);}}><TrainFront size={16}/> {t("Stations")}</button>
       <button aria-pressed={showLines} disabled={!network} className={showLines?'on':''} onClick={()=>{setShowLines(!showLines);setLegend(!showLines);}}><Layers size={16}/> {t("TfL lines")}</button>
       {showLines&&<button className="line-picker-toggle" aria-expanded={legend} onClick={()=>setLegend(!legend)}><ChevronDown size={14}/> {t("Lines")}</button>}

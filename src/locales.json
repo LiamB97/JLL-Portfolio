@@ -189,7 +189,14 @@
     "Save developments with the heart button, or clear your filters to see more favourites.": "احفظ المشاريع باستخدام زر القلب، أو امسح عوامل التصفية لعرض المزيد من المفضلة.",
     "With your permission, JLL counts visits, development views, favourite saves and WhatsApp clicks to understand how the portfolio and broker links are used. These are anonymous counts, without buyer profiles or contact details. You can change your choice in Preferences.": "بموافقتك، تحصي JLL الزيارات ومشاهدات المشاريع والإضافات إلى المفضلة ونقرات واتساب لفهم استخدام الموقع وروابط الوسطاء. هذه إحصاءات مجهولة الهوية، دون ملفات للمشترين أو بيانات اتصال. يمكنك تغيير اختيارك في التفضيلات.",
     "Google Analytics also measures site use and speed. Contact details, search text and journey destinations are excluded.": "تقيس Google Analytics أيضًا استخدام الموقع وسرعته. لا تشمل بيانات الاتصال أو نص البحث أو وجهات التنقل.",
-    "Saved homes appear as heart pins. Use Show favourites only to explore your shortlist on the map.": "تظهر المنازل المحفوظة كدبابيس على شكل قلب. استخدم عرض المفضلة فقط لاستكشاف قائمتك المختصرة على الخريطة."
+    "Saved homes appear as heart pins. Use Show favourites only to explore your shortlist on the map.": "تظهر المنازل المحفوظة كدبابيس على شكل قلب. استخدم عرض المفضلة فقط لاستكشاف قائمتك المختصرة على الخريطة.",
+    "View development": "عرض المشروع",
+    "Map tools": "أدوات الخريطة",
+    "Featured": "مميز",
+    "Sample collection": "مجموعة تجريبية",
+    "London, connected": "لندن، متصلة",
+    "Your London shortlist": "قائمتك المختصرة في لندن",
+    "On mobile, open Map tools to show the map controls. Turn on Stations to show TfL rail stops and lines. Select one or several lines to explore connections. Landmarks adds useful places around London. Inside a development, walking and cycling links and the destination form open Google Maps for route options.": "على الهاتف، افتح أدوات الخريطة لإظهار عناصر التحكم. فعّل المحطات لعرض محطات وخطوط السكك التابعة لهيئة النقل في لندن. اختر خطًا أو عدة خطوط لاستكشاف المواصلات. تُظهر المعالم أماكن مفيدة في لندن. داخل تفاصيل المشروع، تفتح روابط المشي والدراجة ونموذج الوجهة خرائط Google لعرض المسارات."
   },
   "zh-CN": {
     "Map": "地图",
@@ -381,7 +388,14 @@
     "Save developments with the heart button, or clear your filters to see more favourites.": "点击爱心收藏楼盘，或清除筛选条件以查看更多收藏。",
     "With your permission, JLL counts visits, development views, favourite saves and WhatsApp clicks to understand how the portfolio and broker links are used. These are anonymous counts, without buyer profiles or contact details. You can change your choice in Preferences.": "经您同意，JLL 会统计访问、楼盘浏览、收藏和 WhatsApp 点击次数，以了解网站和经纪人链接的使用情况。这些是匿名统计，不包含买家档案或联系方式。您可以在偏好设置中更改选择。",
     "Google Analytics also measures site use and speed. Contact details, search text and journey destinations are excluded.": "Google Analytics 还会衡量网站使用情况和速度，不包含联系方式、搜索文本或行程目的地。",
-    "Saved homes appear as heart pins. Use Show favourites only to explore your shortlist on the map.": "已收藏楼盘会显示为爱心标记。使用“只显示收藏”在地图上探索您的候选楼盘。"
+    "Saved homes appear as heart pins. Use Show favourites only to explore your shortlist on the map.": "已收藏楼盘会显示为爱心标记。使用“只显示收藏”在地图上探索您的候选楼盘。",
+    "View development": "查看楼盘",
+    "Map tools": "地图工具",
+    "Featured": "精选",
+    "Sample collection": "示例楼盘",
+    "London, connected": "畅连伦敦",
+    "Your London shortlist": "您的伦敦候选清单",
+    "On mobile, open Map tools to show the map controls. Turn on Stations to show TfL rail stops and lines. Select one or several lines to explore connections. Landmarks adds useful places around London. Inside a development, walking and cycling links and the destination form open Google Maps for route options.": "在手机上，打开“地图工具”显示地图控件。开启车站图层以查看 TfL 铁路站点和线路。可选择一条或多条线路了解交通连接。地标图层显示伦敦的重要地点。在楼盘详情中，步行、骑行链接和目的地表单会打开 Google 地图查看路线。"
   },
   "tr": {
     "Map": "Harita",
@@ -573,6 +587,13 @@
     "Save developments with the heart button, or clear your filters to see more favourites.": "Kalp düğmesiyle projeleri kaydedin veya daha fazla favori görmek için filtreleri temizleyin.",
     "With your permission, JLL counts visits, development views, favourite saves and WhatsApp clicks to understand how the portfolio and broker links are used. These are anonymous counts, without buyer profiles or contact details. You can change your choice in Preferences.": "İzninizle JLL, portföyün ve danışman bağlantılarının nasıl kullanıldığını anlamak için ziyaretleri, proje görüntülemelerini, favorilere eklemeleri ve WhatsApp tıklamalarını sayar. Bu anonim sayımlar alıcı profilleri veya iletişim bilgileri içermez. Tercihler bölümünden seçiminizi değiştirebilirsiniz.",
     "Google Analytics also measures site use and speed. Contact details, search text and journey destinations are excluded.": "Google Analytics ayrıca site kullanımını ve hızını ölçer. İletişim bilgileri, arama metni ve yolculuk varış noktaları dahil edilmez.",
-    "Saved homes appear as heart pins. Use Show favourites only to explore your shortlist on the map.": "Kaydedilen konutlar haritada kalp simgesiyle görünür. Kısa listenizi haritada keşfetmek için Yalnızca favorileri göster seçeneğini kullanın."
+    "Saved homes appear as heart pins. Use Show favourites only to explore your shortlist on the map.": "Kaydedilen konutlar haritada kalp simgesiyle görünür. Kısa listenizi haritada keşfetmek için Yalnızca favorileri göster seçeneğini kullanın.",
+    "View development": "Projeyi incele",
+    "Map tools": "Harita araçları",
+    "Featured": "Öne çıkan",
+    "Sample collection": "Örnek koleksiyon",
+    "London, connected": "Londra, bağlantılı",
+    "Your London shortlist": "Londra kısa listeniz",
+    "On mobile, open Map tools to show the map controls. Turn on Stations to show TfL rail stops and lines. Select one or several lines to explore connections. Landmarks adds useful places around London. Inside a development, walking and cycling links and the destination form open Google Maps for route options.": "Mobilde harita kontrollerini görmek için Harita araçları bölümünü açın. TfL istasyonlarını ve hatlarını görmek için İstasyonlar seçeneğini açın. Bağlantıları incelemek için bir veya birkaç hat seçin. Önemli yerler seçeneği Londra’daki yararlı noktaları gösterir. Proje içinde yürüme ve bisiklet bağlantıları ile varış formu, rota seçenekleri için Google Haritalar’ı açar."
   }
 }

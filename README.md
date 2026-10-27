@@ -59,7 +59,7 @@ The maximum-price filter and price sorting have been removed. Development-level 
 
 A fresh empty database initially contains six clearly labelled fictional collections. The first successful website refresh removes those samples and populates the verified JLL collection. The current database contains 69 website-sourced developments. Original architectural illustrations remain as fallbacks when images are unavailable.
 
-The JLL logo and Source Sans font are sourced from the public JLL website and retained as local assets. The overall red/black/white design is provisional pending supplied brand guidelines. Development photography uses the original website image URLs; verify media use and long-term URL stability before launch.
+The Residential positive/negative logos are official vector artwork extracted from the supplied 2026 guidelines. Source Sans Pro is self-hosted, and the Space/Midnight/Sand palette follows the owner’s direction and the supplied guidelines. See docs/brand-assets.md for provenance. Development photography uses the original website image URLs; verify media use and long-term URL stability before launch.
 
 The default map uses OpenFreeMap's clean Positron vector style through MapLibre, with university/college labels from zoom 13 and more local place labels from zoom 16. It needs no Google account or key. Development pins use a simple pin with a centre dot, without a building/office icon or price. Prices remain in details/list cards. Basic OpenStreetMap raster tiles provide a fallback if WebGL or vector-style loading fails.
 
@@ -125,12 +125,12 @@ Use **Reports → Realtime** in GA4 to check setup and **Engagement → Events**
 
 JLL source pages: `digitalportfolio.live.jll.com`, `residential.jll.co.uk`.
 Browser vector styles/tiles/fonts: `tiles.openfreemap.org`; raster fallback: `tile.openstreetmap.org`. Backend transport and routing: `api.tfl.gov.uk`. The map opens full-screen by default; Split and List are optional header views. Nearby developments are clustered until zoomed in.
-JLL image hosting: `res.cloudinary.com`. Optional web fonts: `fonts.googleapis.com`, `fonts.gstatic.com` (system-font fallback exists).
+JLL image hosting: `res.cloudinary.com`. Interface fonts and logos are self-hosted; Google Fonts is not contacted by the browser. OpenFreeMap still serves its own map glyphs.
 The Google Maps journey action opens `www.google.com` in the buyer's browser. Staff website imports need outbound HTTPS/DNS to each supplied public source host. Imported media URLs need their own source access. Automatic descriptions use `translate.googleapis.com`; optional postcode lookup uses `api.postcodes.io`. No-key services can be unavailable and have explicit fallback paths. Opt-in GA4 uses `www.googletagmanager.com` and Google Analytics collection hosts; neither is contacted before analytics consent. Review those destinations when real listing media is available.
 
 ## Before public launch
 
-The collection importer has been exercised against the live JLL site. Establish ongoing permission/reliability for website extraction and media use, and agree stock withdrawal and price-update rules. Review the two skipped listings, verify the imported stock and supplied brand guidelines. Continue reviewing stock freshness, durable backups and production access controls. The prototype is deployed at https://subtle-malabi-144145.netlify.app/.
+The collection importer has been exercised against the live JLL site. Establish ongoing permission/reliability for website extraction and media use, and agree stock withdrawal and price-update rules. Review the two skipped listings, verify the imported stock. Continue reviewing stock freshness, durable backups and production access controls. The prototype is deployed at https://subtle-malabi-144145.netlify.app/.
 
 ## Netlify deployment
 
@@ -156,3 +156,10 @@ Buyer engagement works without a Google Analytics account. The visitor must acce
 Netlify uses a separate private, strongly consistent `jll-team-engagement` Blobs store with daily per-broker totals and conditional writes. This keeps buyer traffic away from portfolio stock/account writes. SQLite development stores daily aggregates in separate metadata rows. Scheduled stock-refresh maintenance prunes anonymous daily aggregates older than 400 days; SQLite prunes them on writes. Staff daily counts cover 400 days, lifetime staff totals persist, and the timeline retains at most the latest 5,000 events within 400 days. Reports allow up to 180 days per selection within the past year; comparison periods before tracking or retention are incomplete. Dates use UTC; displayed timestamps use London time. No external analytics API or secret is needed. GA4 remains optional and separate.
 
 Saved homes appear as heart pins above ordinary clusters, retaining a featured ring when applicable. **Show favourites only** applies across Map, Split and List and intersects the existing filters. Favourites remain on the current browser/device and are not staff account records.
+
+
+### Residential branding and responsive browsing
+
+The portfolio now uses the owner-provided Space `#003E51`, guideline Midnight `#131E29`, Sand `#E0C6AD` and White. Source Sans Pro and both official Residential logo variants are self-hosted. The logos are original vector paths extracted from page 5 of the supplied 2026 guidelines, with their red Worldmark and lockup geometry preserved. The journey-line artwork is not used. Asset origins, licences and logo spacing are documented in [docs/brand-assets.md](docs/brand-assets.md).
+
+List controls scroll naturally with listings. Desktop Split keeps controls in a separate toolbar above its map/list workspace; mobile Split uses one scroll area, a taller map and a nearby collection heading. On mobile, **Map tools** expands the landmark/station/TfL controls without changing active layers when collapsed. Photo counters, card overlays and View development buttons have explicit theme-aware contrast. Broker WhatsApp actions include a locally bundled WhatsApp icon and spacing around their explanatory copy.

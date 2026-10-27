@@ -1,3 +1,4 @@
+import WhatsAppIcon from './WhatsAppIcon';
 import React, {useCallback, useEffect, useState, useRef, useMemo, lazy, Suspense} from 'react';
 import {createRoot} from 'react-dom/client';
 import {ArrowUpRight, ArrowRight, MapPin, Search, SlidersHorizontal, Map as MapIcon, LayoutGrid, Columns2, X, TrainFront, ChevronLeft, ChevronRight, Check, ArrowLeft, Building2, Settings, Heart, Star, CircleHelp} from 'lucide-react';
@@ -9,6 +10,7 @@ import Favourites from './Favourites';
 import {useFavourites} from './shortlist';
 import {type Development, type Station, type TransportNetwork, type Connections, type BuyerCollection,type BrokerCard, money, bedroomLabel, distance} from './types';
 import './style.css';
+import './brand.css';
 import Preferences from './Preferences';
 import {PreferencesProvider,useLocale} from './i18n';
 import Detail from './Detail';
@@ -79,7 +81,7 @@ function App() {
   return <div className={`portfolio-app ${admin ? 'admin-active' : 'explorer-active'}`}>
     <header className="explorer-header" dir="ltr">
       <a className="brand" href="#" aria-label={t("JLL Residential home")}>
-        <img className="official-logo" src={dark?'/images/jll-residential-dark.svg':'/images/jll-residential-light.svg'} alt="JLL Residential"/>
+        <img className="official-logo" src={dark?'/images/jll-residential-dark.svg?v=2026-01':'/images/jll-residential-light.svg?v=2026-01'} alt="JLL Residential"/>
 
       </a>
       {!admin&&!howItWorks && <div className="explorer-view-toggle" role="group" aria-label={t("Portfolio view")}>
@@ -111,7 +113,7 @@ function App() {
         <button className={favouritesOnly?"favourites-map-toggle on":"favourites-map-toggle"} aria-pressed={favouritesOnly} onClick={()=>{setFavouritesOnly(!favouritesOnly);setSelected(null);}}><Heart size={15} fill={favouritesOnly?"currentColor":"none"}/>{t(favouritesOnly?"Show all developments":"Show favourites only")}<span>{favourites.ids.filter(id=>items.some(d=>d.id===id)).length}</span></button>
         <div className="explorer-result-count" role="status" aria-live="polite">{loading ? 'Loading London homes…' : <><span className="collection-dot"/><strong>{t('{count} developments',{count:filtered.length})}</strong><span>{t("across London")}</span>{(query || filterCount > 0 || favouritesOnly) && <button onClick={reset}>{t("Clear all")}</button>}</>}</div>
         {collection&&<section className="featured-intro"><span><Star size={15}/><strong>{collection.title}</strong></span><p>{featuredIds.length} {t("featured developments · Picked by")} {collection.brokerName}</p><button aria-pressed={featuredOnly} onClick={()=>setFeaturedOnly(!featuredOnly)}>{featuredOnly?'Explore all developments':'Show featured only'}</button></section>}
-        {broker&&<section className="broker-intro"><span>{t('Your JLL broker')}: <strong>{broker.name}</strong></span><a onClick={()=>track('whatsapp_click',{surface:'broker_banner'})} href={'https://wa.me/'+broker.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent(t("Hi, I'd like more information about your London developments."))} target="_blank" rel="noopener noreferrer">{t('WhatsApp {name}',{name:broker.name})} <ArrowUpRight size={13}/></a></section>}
+        {broker&&<section className="broker-intro"><span>{t('Your JLL broker')}: <strong>{broker.name}</strong></span><a onClick={()=>track('whatsapp_click',{surface:'broker_banner'})} href={'https://wa.me/'+broker.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent(t("Hi, I'd like more information about your London developments."))} target="_blank" rel="noopener noreferrer"><WhatsAppIcon size={16}/>{t('WhatsApp {name}',{name:broker.name})} <ArrowUpRight size={13}/></a></section>}
         {collectionError&&<div className="explorer-message" role="status">{collectionError} {t("You can still explore the full portfolio.")}</div>}
         {error && <div className="explorer-message" role="alert">{error}<button onClick={() => { setError(''); void refresh().catch(e => setError(e.message)); }}>{t("Retry")}</button></div>}
         {!loading && !filtered.length && !error && view === 'map' && <div className="explorer-message"><Building2 size={20}/><div><strong>{t(favouritesOnly?"No favourites match this view":"No homes found")}</strong><p>{t(favouritesOnly?"Save developments with the heart button, or clear your filters to see more favourites.":"Try a different area or broaden your filters.")}</p></div><button onClick={reset}>{t("Reset")}</button></div>}
@@ -122,8 +124,8 @@ function App() {
           <div className="listing-heading"><h1>{t("London collection")}</h1><label>{t("Sort by")}<select aria-label={t("Sort developments")} value={sort} onChange={e => setSort(e.target.value)}><option value="curated">{t("Our collection")}</option><option value="name">{t("Name: A–Z")}</option><option value="area">{t("Area: A–Z")}</option></select></label></div>
           {loading ? <p className="empty-state">{t("Loading your London collection…")}</p> : !filtered.length ? <div className="empty-state"><Building2 size={30}/><h2>{t(favouritesOnly?"No favourites match this view":"No homes found")}</h2><p>{t(favouritesOnly?"Save developments with the heart button, or clear your filters to see more favourites.":"Try a different area or broaden your filters.")}</p><button onClick={reset}>{t("Reset filters")}</button></div> : <div className="cards">
             {filtered.map(d => <article className="property-card-wrap" key={d.id}><button className={`property-card ${selected === d.id ? 'selected' : ''}`} key={d.id} onClick={() => setSelected(d.id)}>
-              <div className="card-image"><img src={d.images[0] || '/images/city.svg'} alt={d.sample ? 'Architectural illustration' : d.name} loading="lazy" onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/city.svg'; }}/><span className="card-tag">{featuredIds.includes(d.id)?t('FEATURED'):d.sample ? t('SAMPLE COLLECTION') : t(d.status)}</span><span className="card-arrow"><ArrowUpRight size={18}/></span></div>
-              <div className="card-body"><p className="card-area"><MapPin size={12}/>{d.area}<span>· {d.postcode}</span></p><h2>{d.name}</h2><p className="card-beds">{bedroomLabel(d.bedrooms).replace('Studio',t('Studio'))} {t("bedrooms")} <span>·</span> {d.propertyTypes.map(ptype=>t(ptype)).join(' & ')}</p><div className="card-bottom"><span>{t("Prices from")} <strong>{money(d.priceFrom)}</strong></span><span className="explore">{t("Explore")} <ArrowRight size={14}/></span></div></div>
+              <div className="card-image"><img src={d.images[0] || '/images/city.svg'} alt={d.sample ? 'Architectural illustration' : d.name} loading="lazy" onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/city.svg'; }}/><span className={featuredIds.includes(d.id)?"card-tag featured-tag":"card-tag"}>{featuredIds.includes(d.id)?t('Featured'):d.sample ? t('Sample collection') : t(d.status)}</span><span className="card-arrow"><ArrowUpRight size={18}/></span></div>
+              <div className="card-body"><p className="card-area"><MapPin size={12}/>{d.area}<span>· {d.postcode}</span></p><h2>{d.name}</h2><p className="card-beds">{bedroomLabel(d.bedrooms).replace('Studio',t('Studio'))} {t("bedrooms")} <span>·</span> {d.propertyTypes.map(ptype=>t(ptype)).join(' & ')}</p><div className="card-bottom"><span>{t("Prices from")} <strong>{money(d.priceFrom)}</strong></span><span className="explore">{t("View development")} <ArrowRight size={14}/></span></div></div>
             </button><button className={favourites.ids.includes(d.id)?"save-card saved":"save-card"} aria-pressed={favourites.ids.includes(d.id)} aria-label={favourites.ids.includes(d.id)?`Remove ${d.name} from favourites`:`Save ${d.name} to favourites`} onClick={()=>favourites.toggle(d.id)}><Heart size={17} fill={favourites.ids.includes(d.id)?"currentColor":"none"}/></button></article>)}
           </div>}
         </section>}
