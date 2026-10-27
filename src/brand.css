@@ -152,3 +152,24 @@ html[data-theme=dark] .development-cluster>span{background:var(--sand);color:var
 .explorer-search,.explorer-filter-fields select,.connections input,.connections select{border-color:color-mix(in srgb,var(--ink) 50%,var(--surface))}
 
 @media(max-width:760px){html[dir=rtl] .map-explorer .map-controls.tools-open,html[dir=rtl] .map-explorer .line-legend{left:14px;right:14px}}
+
+/* Keep the cluster number and its halo concentric despite Leaflet's icon display rule. */
+.map-shell .leaflet-marker-icon.development-cluster{display:flex;align-items:center;justify-content:center;padding:0;box-sizing:border-box;border-width:1px}
+.map-shell .development-cluster>span{display:flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px;height:32px;margin:0;padding:0;line-height:1;box-shadow:0 0 6px color-mix(in srgb,var(--space) 18%,transparent)}
+.map-explorer .broker-intro{display:inline-flex;align-items:center;flex-wrap:nowrap;width:fit-content;max-width:100%;gap:12px;padding:6px 11px;min-height:44px}
+.broker-intro .broker-label{font-size:11px;color:var(--muted);flex:0 0 auto}
+.broker-intro a{display:inline-flex;align-items:center;gap:8px;min-width:0;min-height:30px;font-size:13px}
+.broker-intro a strong{min-width:0;overflow-wrap:anywhere;line-height:1.4}
+.map-explorer:is(.view-list,.view-split)>.explorer-tools>.broker-intro{flex:0 1 auto;min-height:44px}
+.detail-summary-two{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+.split-browse-jump{display:none}
+@media(max-width:760px){
+ .map-explorer:is(.view-list,.view-split)>.explorer-tools>.broker-intro{flex:0 1 auto;max-width:100%;font-size:12px}
+ .map-explorer.view-split>.explorer-tools>.split-browse-jump{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1 0 100%;min-height:42px;padding:9px 12px;font-size:14px;font-weight:600;color:var(--accent);background:var(--selected-bg);border:1px solid var(--line)}
+ .map-explorer.view-split .map-shell{height:clamp(320px,50svh,480px);min-height:320px}
+ .detail-summary-two .detail-summary-price{grid-column:auto}
+ .broker-intro .broker-label{font-size:10px}
+}
+.activity-session-note{font-size:12px;line-height:1.7;color:var(--muted);padding:12px 15px;border-inline-start:3px solid var(--accent);background:var(--surface);border-radius:4px}
+.explorer-filter-fields{grid-template-columns:repeat(3,minmax(0,1fr))}.explorer-filter-fields label:last-child{grid-column:auto}
+@media(max-width:760px){.explorer-filter-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.explorer-filter-fields label:last-child{grid-column:1/-1}}

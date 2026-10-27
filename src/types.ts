@@ -10,3 +10,6 @@ export interface Connections {source:string;updatedAt:string;stations:StationRou
 
 export interface BrokerCard {name:string;whatsapp:string;slug:string}
 export interface BuyerCollection {broker?:BrokerCard|null;slug:string;title:string;brokerName:string;developmentIds:string[]}
+
+// New homes describes this entire portfolio, rather than a useful unit type.
+export const specificPropertyTypes=(types:string[])=>types.filter(type=>!/^new[\s-]*homes?$/i.test(type.trim()));

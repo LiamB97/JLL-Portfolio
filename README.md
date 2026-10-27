@@ -163,3 +163,12 @@ Saved homes appear as heart pins above ordinary clusters, retaining a featured r
 The portfolio now uses the owner-provided Space `#003E51`, guideline Midnight `#131E29`, Sand `#E0C6AD` and White. Source Sans Pro and both official Residential logo variants are self-hosted. The logos are original vector paths extracted from page 5 of the supplied 2026 guidelines, with their red Worldmark and lockup geometry preserved. The journey-line artwork is not used. Asset origins, licences and logo spacing are documented in [docs/brand-assets.md](docs/brand-assets.md).
 
 List controls scroll naturally with listings. Desktop Split keeps controls in a separate toolbar above its map/list workspace; mobile Split uses one scroll area, a taller map and a nearby collection heading. On mobile, **Map tools** expands the landmark/station/TfL controls without changing active layers when collapsed. Photo counters, card overlays and View development buttons have explicit theme-aware contrast. Broker WhatsApp actions include a locally bundled WhatsApp icon and spacing around their explanatory copy.
+
+
+### London New Homes refinements
+
+The public heading is **London New Homes**. The redundant property-type filter and generic “New homes” facts are hidden; specific unit types remain visible when supplied. Buyer links show a compact WhatsApp icon/name link. Mobile Split includes a **View homes below** action that scrolls to and focuses the listing heading. Cluster icon layout explicitly centres the number within its halo.
+
+The curated landmark layer contains 75 London shopping destinations, markets, cultural sites, parks and major sights. Fifteen key points appear from zoom 11, other points from zoom 12; detailed labels appear on zooming and are checked for overlap. Coordinates represent locations for orientation, rather than designated entrances or walking-route destinations. Map-provider POIs and university labels remain available independently.
+
+Team activity distinguishes recorded sign-in events from currently unexpired sessions. A session started before audit reporting can remain valid with no recorded historical sign-in. Refreshes/resumed sessions are not counted as new logins. New password sign-ins and activations are recorded atomically; session counts are computed from current, enabled accounts and do not imply that every browser tab is online. The Admin-only CSV includes this count. Broker and Broker-admin guides exclude the Team activity and Analytics chapters, and both reporting APIs enforce Admin access.

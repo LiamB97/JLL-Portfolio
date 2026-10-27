@@ -62,3 +62,22 @@ test('report authorization is rechecked against the latest account and session',
 test('engagement retention prunes only expired daily keys across all storage pages',async()=>{const removed=[];const store={async *list(){yield {blobs:[{key:'2025-01-01'},{key:'2025-09-23'},{key:'configuration'}]};yield {blobs:[{key:'2024-01-01'},{key:'2026-10-27'}]};},delete:async key=>{removed.push(key);}};await engagementRepository(store).prune('2025-09-23');assert.deepEqual(removed,['2025-01-01','2024-01-01']);});
 
 test('consented buyer activity initializes coverage before an existing staff account next signs in',async()=>{const e=env(),owner=await e.owner();await e.repository.update(s=>{delete s.activity;});const before=Date.now();assert.equal((await e.call('activity',{consent:'accepted',events:[{event:'page_view',broker:owner.data.user.shareSlug}]})).status,200);const state=await e.repository.read();assert.ok(Date.parse(state.activity.startedAt)>=before);assert.deepEqual(state.activity.people,{});assert.equal(state.activity.timeline.length,0);const report=(await e.call('admin/activity',null,owner)).data;assert.equal(report.rows[0].buyer.page_view,1);assert.equal(report.rows[0].lastLoginAt,null);assert.equal(report.rows[0].counts.login,undefined);});
+
+test('an older valid session is shown separately from recorded sign-ins and page reloads never fabricate logins',async()=>{
+ const e=env(),owner=await e.owner(),broker=await e.broker(owner);
+ // Simulate an account already signed in when reporting was introduced.
+ await e.repository.update(s=>{delete s.activity;for(const session of s.sessions)delete session.createdAt;});
+ for(let i=0;i<2;i++)assert.equal((await e.call('access/me',null,broker)).status,200);
+ assert.equal((await e.call('admin/heartbeat',{},broker)).status,200);
+ let report=(await e.call('admin/activity',null,owner)).data,row=report.rows.find(r=>r.id===broker.data.user.id);
+ assert.equal(row.activeSessions,1);assert.equal(row.counts.login,undefined);assert.equal(row.lastLoginAt,null);assert.ok(row.lastActivityAt);assert.equal(report.timeline.filter(e=>e.event==='login').length,0);
+ const signed=await e.call('access/login',{email:broker.email,password:broker.password});assert.equal(signed.status,200);
+ const state=await e.repository.read();assert.ok(state.sessions.some(s=>s.userId===broker.data.user.id&&s.createdAt));
+ assert.equal((await e.call('access/me',null,signed)).status,200);
+ report=(await e.call('admin/activity',null,owner)).data;row=report.rows.find(r=>r.id===broker.data.user.id);
+ assert.equal(row.activeSessions,2);assert.equal(row.counts.login,1);assert.ok(row.lastLoginAt);assert.equal(row.lifetime.login,1);assert.equal(report.timeline.filter(e=>e.userId===broker.data.user.id&&e.event==='login').length,1);
+ await e.call('access/logout',{},broker);await e.call('access/logout',{},signed);
+ await e.repository.update(s=>s.sessions.push({userId:broker.data.user.id,tokenHash:'expired-test-session',expiresAt:Date.now()-1}));
+ row=(await e.call('admin/activity',null,owner)).data.rows.find(r=>r.id===broker.data.user.id);
+ assert.equal(row.activeSessions,0);assert.equal(row.counts.login,1);assert.equal(row.lifetime.login,1);
+});

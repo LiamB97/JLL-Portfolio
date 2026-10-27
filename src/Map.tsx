@@ -58,7 +58,7 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
       gl.addLayer({id:'london-local-places',type:'symbol',source,'source-layer':'poi',minzoom:16,filter:['!',universityFilter],layout:{'text-field':['coalesce',['get','name:en'],['get','name:latin'],['get','name']],'text-font':['Noto Sans Regular'],'text-size':11,'text-max-width':12},paint:{'text-color':dark?'#a3ada6':'#8b938d','text-halo-color':dark?'#1F2A35':'#fff','text-halo-width':1.5}});
     });
     landmarkLayer.current=L.layerGroup().addTo(m);
-    markers.current=L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:40,spiderfyOnMaxZoom:true,iconCreateFunction:cluster=>L.divIcon({html:`<span>${cluster.getChildCount()}</span>`,className:'development-cluster',iconSize:[42,42]})}).addTo(m);
+    markers.current=L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:40,spiderfyOnMaxZoom:true,iconCreateFunction:cluster=>L.divIcon({html:`<span>${cluster.getChildCount()}</span>`,className:'development-cluster',iconSize:[42,42],iconAnchor:[21,21]})}).addTo(m);
     lines.current=L.layerGroup().addTo(m);stationLayer.current=L.layerGroup().addTo(m);featuredLayer.current=L.layerGroup().addTo(m);
     const resize=new ResizeObserver(()=>m.invalidateSize({pan:false}));resize.observe(el.current);
     return()=>{window.clearTimeout(styleTimeout);resize.disconnect();m.stop();
@@ -76,7 +76,25 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
       marker.on('add',()=>marker.getElement()?.setAttribute('aria-label',`${d.name}${highlighted?', '+t('FEATURED'):''}${saved?', '+t('Saved to favourites'):''}`)).on('click',()=>onSelect(d.id)).addTo(highlighted||saved?featured:group);
     }
   },[items,selected,onSelect,featuredIds,favouriteIds,dark,t]);
-  useEffect(()=>{const m=map.current,group=landmarkLayer.current;if(!m||!group)return;function render(){group!.clearLayers();if(!showLandmarks||m!.getZoom()<12)return;for(const place of landmarks){const label=document.createElement('span');label.textContent=place.name;L.circleMarker([place.lat,place.lng],{pane:'landmarks',radius:3.5,color:dark?'#E0C6AD':'#131E29',fillColor:dark?'#131E29':'#fff',fillOpacity:1,weight:1.7}).bindTooltip(label,{permanent:m!.getZoom()>=13,direction:'right',offset:[5,0],className:'landmark-label'}).addTo(group!);}}render();m.on('zoomend',render);return()=>{m.off('zoomend',render);};},[showLandmarks,dark]);
+  useEffect(()=>{
+    const m=map.current,group=landmarkLayer.current;if(!m||!group)return;
+    function render(){
+      group!.clearLayers();const zoom=m!.getZoom();if(!showLandmarks||zoom<11)return;
+      const labels:L.Bounds[]=[],viewport=m!.getBounds().pad(.1);
+      for(const place of [...landmarks].sort((a,b)=>a.minZoom-b.minZoom)){
+        if(zoom<place.minZoom||!viewport.contains([place.lat,place.lng]))continue;
+        const position=m!.latLngToContainerPoint([place.lat,place.lng]);
+        const bounds=L.bounds([position.x+8,position.y-10],[position.x+8+Math.min(260,place.name.length*6+14),position.y+10]);
+        const permanent=zoom>=(place.minZoom===11?11:13)&&!labels.some(other=>other.intersects(bounds));
+        if(permanent)labels.push(bounds);
+        const label=document.createElement('span');label.textContent=place.name;
+        L.circleMarker([place.lat,place.lng],{pane:'landmarks',radius:place.minZoom===11?4:3.5,color:dark?'#E0C6AD':'#003E51',fillColor:dark?'#131E29':'#fff',fillOpacity:1,weight:1.7})
+          .bindTooltip(label,{permanent,direction:'right',offset:[5,0],className:'landmark-label'})
+          .on('add',event=>{(event.target as L.CircleMarker).getElement()?.setAttribute('aria-label',place.name);}).addTo(group!);
+      }
+    }
+    render();m.on('moveend',render);return()=>{m.off('moveend',render);};
+  },[showLandmarks,dark]);
   const framedFavourites=useRef(false);
   useEffect(()=>{if(!favouritesOnly){framedFavourites.current=false;return;}if(framedFavourites.current||!items.length||!map.current)return;const size=map.current.getSize();map.current.fitBounds(L.latLngBounds(items.map(d=>[d.lat,d.lng] as [number,number])),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(230,size.y*.35)],paddingBottomRight:[35,Math.min(65,size.y*.15)],maxZoom:14});framedFavourites.current=true;},[favouritesOnly,items,dark]);
   const framedCollection=useRef('');

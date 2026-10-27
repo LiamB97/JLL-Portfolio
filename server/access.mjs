@@ -20,7 +20,7 @@ function cookies(request){return Object.fromEntries((request.headers.get('cookie
 export function sessionCookie(token,request,clear=false){return `jll_session=${clear?'':token}; Path=/api; HttpOnly; SameSite=Strict; Max-Age=${clear?0:SESSION_MS/1000}${new URL(request.url).protocol==='https:'?'; Secure':''}`;}
 export function checkOrigin(request){const origin=request.headers.get('origin');if(origin&&origin!==new URL(request.url).origin)throw new AccessError('This request must come from the portfolio.',403);}
 export function accessService(repository,bootstrapSecret,{now=Date.now}={}){
- function addSession(s,user){recordStaff(s,user,'login',{now:now()});const token=randomBytes(32).toString('base64url');s.sessions=s.sessions.filter(x=>x.expiresAt>now());s.sessions.push({tokenHash:digest(token),userId:user.id,expiresAt:now()+SESSION_MS});return {user:publicUser(user),token,csrf:digest('csrf:'+token)};}
+ function addSession(s,user){recordStaff(s,user,'login',{now:now()});const token=randomBytes(32).toString('base64url');s.sessions=s.sessions.filter(x=>x.expiresAt>now());s.sessions.push({tokenHash:digest(token),userId:user.id,createdAt:new Date(now()).toISOString(),expiresAt:now()+SESSION_MS});return {user:publicUser(user),token,csrf:digest('csrf:'+token)};}
  async function status(){const s=await repository.read();return {setupRequired:!(s.users||[]).length,setupConfigured:typeof bootstrapSecret==='string'&&bootstrapSecret.length>=12};}
  async function authenticate(request,{allowLegacy=true}={}){
   const s=await repository.read(),token=cookies(request).jll_session;

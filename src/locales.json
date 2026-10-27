@@ -196,7 +196,10 @@
     "Sample collection": "مجموعة تجريبية",
     "London, connected": "لندن، متصلة",
     "Your London shortlist": "قائمتك المختصرة في لندن",
-    "On mobile, open Map tools to show the map controls. Turn on Stations to show TfL rail stops and lines. Select one or several lines to explore connections. Landmarks adds useful places around London. Inside a development, walking and cycling links and the destination form open Google Maps for route options.": "على الهاتف، افتح أدوات الخريطة لإظهار عناصر التحكم. فعّل المحطات لعرض محطات وخطوط السكك التابعة لهيئة النقل في لندن. اختر خطًا أو عدة خطوط لاستكشاف المواصلات. تُظهر المعالم أماكن مفيدة في لندن. داخل تفاصيل المشروع، تفتح روابط المشي والدراجة ونموذج الوجهة خرائط Google لعرض المسارات."
+    "On mobile, open Map tools to show the map controls. Turn on Stations to show TfL rail stops and lines. Select one or several lines to explore connections. Landmarks adds useful places around London. Inside a development, walking and cycling links and the destination form open Google Maps for route options.": "على الهاتف، افتح أدوات الخريطة لإظهار عناصر التحكم. فعّل المحطات لعرض محطات وخطوط السكك التابعة لهيئة النقل في لندن. اختر خطًا أو عدة خطوط لاستكشاف المواصلات. تُظهر المعالم أماكن مفيدة في لندن. داخل تفاصيل المشروع، تفتح روابط المشي والدراجة ونموذج الوجهة خرائط Google لعرض المسارات.",
+    "London New Homes": "منازل جديدة في لندن",
+    "Loading London New Homes…": "جارٍ تحميل منازل لندن الجديدة…",
+    "View {count} homes below": "عرض {count} منازل أدناه"
   },
   "zh-CN": {
     "Map": "地图",
@@ -395,7 +398,10 @@
     "Sample collection": "示例楼盘",
     "London, connected": "畅连伦敦",
     "Your London shortlist": "您的伦敦候选清单",
-    "On mobile, open Map tools to show the map controls. Turn on Stations to show TfL rail stops and lines. Select one or several lines to explore connections. Landmarks adds useful places around London. Inside a development, walking and cycling links and the destination form open Google Maps for route options.": "在手机上，打开“地图工具”显示地图控件。开启车站图层以查看 TfL 铁路站点和线路。可选择一条或多条线路了解交通连接。地标图层显示伦敦的重要地点。在楼盘详情中，步行、骑行链接和目的地表单会打开 Google 地图查看路线。"
+    "On mobile, open Map tools to show the map controls. Turn on Stations to show TfL rail stops and lines. Select one or several lines to explore connections. Landmarks adds useful places around London. Inside a development, walking and cycling links and the destination form open Google Maps for route options.": "在手机上，打开“地图工具”显示地图控件。开启车站图层以查看 TfL 铁路站点和线路。可选择一条或多条线路了解交通连接。地标图层显示伦敦的重要地点。在楼盘详情中，步行、骑行链接和目的地表单会打开 Google 地图查看路线。",
+    "London New Homes": "伦敦新房",
+    "Loading London New Homes…": "正在加载伦敦新房…",
+    "View {count} homes below": "查看下方 {count} 个楼盘"
   },
   "tr": {
     "Map": "Harita",
@@ -594,6 +600,9 @@
     "Sample collection": "Örnek koleksiyon",
     "London, connected": "Londra, bağlantılı",
     "Your London shortlist": "Londra kısa listeniz",
-    "On mobile, open Map tools to show the map controls. Turn on Stations to show TfL rail stops and lines. Select one or several lines to explore connections. Landmarks adds useful places around London. Inside a development, walking and cycling links and the destination form open Google Maps for route options.": "Mobilde harita kontrollerini görmek için Harita araçları bölümünü açın. TfL istasyonlarını ve hatlarını görmek için İstasyonlar seçeneğini açın. Bağlantıları incelemek için bir veya birkaç hat seçin. Önemli yerler seçeneği Londra’daki yararlı noktaları gösterir. Proje içinde yürüme ve bisiklet bağlantıları ile varış formu, rota seçenekleri için Google Haritalar’ı açar."
+    "On mobile, open Map tools to show the map controls. Turn on Stations to show TfL rail stops and lines. Select one or several lines to explore connections. Landmarks adds useful places around London. Inside a development, walking and cycling links and the destination form open Google Maps for route options.": "Mobilde harita kontrollerini görmek için Harita araçları bölümünü açın. TfL istasyonlarını ve hatlarını görmek için İstasyonlar seçeneğini açın. Bağlantıları incelemek için bir veya birkaç hat seçin. Önemli yerler seçeneği Londra’daki yararlı noktaları gösterir. Proje içinde yürüme ve bisiklet bağlantıları ile varış formu, rota seçenekleri için Google Haritalar’ı açar.",
+    "London New Homes": "Londra Yeni Konutları",
+    "Loading London New Homes…": "Londra yeni konutları yükleniyor…",
+    "View {count} homes below": "Aşağıdaki {count} konutu gör"
   }
 }
