@@ -23,6 +23,6 @@ test('API enforces admin access, atomically validates uploads, and persists chan
  assert.equal((await call('admin/developments/'+item.id,{...item,priceFrom:999000},true,'PUT')).status,200);
  assert.equal((await list()).find(d=>d.id===item.id).priceFrom,999000);
  assert.equal((await call('admin/developments/'+item.id,undefined,false,'DELETE')).status,401);assert.equal((await call('admin/developments/'+item.id,undefined,true,'DELETE')).status,200);assert.equal((await list()).length,6);
- const html=await fetch(`http://127.0.0.1:${port}/`);assert.equal(html.status,200);assert.match(await html.text(),/London new homes/);
+ const html=await fetch(`http://127.0.0.1:${port}/`);assert.equal(html.status,200);assert.match(await html.text(),/<title>London New Homes \| JLL Residential<\/title>/);
  }finally{await stop();await rm(dir,{recursive:true,force:true});}
 });

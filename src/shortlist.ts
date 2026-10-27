@@ -1,4 +1,6 @@
 import {useCallback,useEffect,useState} from 'react';
+import {developmentLink} from '../shared/sharing';
+export {developmentLink} from '../shared/sharing';
 import {track} from './analytics';
 import dictionary from './locales.json';
 import type {Language} from './i18n';
@@ -13,5 +15,4 @@ export function useFavourites(){
  const toggle=useCallback((id:string)=>{track(ids.includes(id)?'favourite_remove':'favourite_add',{development_id:id});setIds(old=>old.includes(id)?old.filter(x=>x!==id):[...old,id].slice(0,200));},[ids]);
  return {ids,toggle,persistent,clear:()=>setIds([])};
 }
-export function developmentLink(origin:string,id:string,collection?:string,broker?:string){const url=new URL('/',origin);url.searchParams.set('development',id);if(collection)url.searchParams.set('collection',collection);else if(broker)url.searchParams.set('broker',broker);return url.href;}
 export function whatsappMessage(items:Development[],origin:string,collection?:string,language:Language='en',broker?:string){const t=(text:string)=>language==='en'?text:(dictionary as Record<string,Record<string,string>>)[language]?.[text]||text;return `${t("Hi, these are the developments I'm interested in. Could you send me some more information?")}\n\n${items.map((d,i)=>`${i+1}. ${d.name} — ${d.area}\n${developmentLink(origin,d.id,collection,broker)}`).join('\n\n')}\n\n${t('Thank you!')}`;}

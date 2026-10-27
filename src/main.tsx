@@ -1,3 +1,4 @@
+import ShareWithFriend from './ShareWithFriend';
 import WhatsAppIcon from './WhatsAppIcon';
 import React, {useCallback, useEffect, useState, useRef, useMemo, lazy, Suspense} from 'react';
 import {createRoot} from 'react-dom/client';
@@ -89,6 +90,7 @@ function App() {
       </div>}
       {!admin&&!howItWorks&&<button className="shortlist-header-button" aria-label={t('Favourites, {count} saved',{count:favourites.ids.length})} onClick={()=>{setSelected(null);setShowFavourites(true);track('shortlist_open',{saved_count:favourites.ids.length});}}><Heart size={17}/><span>{t("Favourites")}</span>{favourites.ids.length>0&&<b>{favourites.ids.length}</b>}</button>}
       {!admin&&<a className={howItWorks?'how-link selected':'how-link'} href="#how-it-works" aria-label={t('How it works')} aria-current={howItWorks?'page':undefined} onClick={()=>{setSelected(null);setShowFavourites(false);setFilters(false);}}><CircleHelp size={18}/><span>{t('How it works')}</span></a>}
+      {!admin&&!howItWorks&&<ShareWithFriend/>}
       <Preferences/>
       <a className="manage-link" href="#admin" aria-label={t("Manage portfolio")} title={t("Manage portfolio")}><Settings size={17}/><span>{t("Manage")}</span></a>
     </header>
