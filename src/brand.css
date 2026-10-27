@@ -179,7 +179,7 @@ html[data-theme=dark] .development-cluster>span{background:var(--sand);color:var
 .whatsapp-icon{color:#128345}
 html[data-theme=dark] .whatsapp-icon{color:var(--whatsapp)}
 :is(a,button).whatsapp-action,:is(a,button).broker-whatsapp,:is(a,button).whatsapp-open,.broker-intro a,
-html[data-theme=dark] :is(a,button).whatsapp-action,html[data-theme=dark] .broker-note .broker-whatsapp,html[data-theme=dark] .whatsapp-open,html[data-theme=dark] .broker-intro a{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:var(--whatsapp);color:var(--whatsapp-ink);border:1px solid var(--whatsapp);border-radius:5px;padding:11px 14px;font-weight:600;text-decoration:none;min-height:42px}
+html[data-theme=dark] :is(a,button).whatsapp-action,html[data-theme=dark] .broker-note .broker-whatsapp,html[data-theme=dark] .whatsapp-open,html[data-theme=dark] .broker-intro a{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:var(--whatsapp);color:var(--whatsapp-ink);border:1px solid var(--whatsapp);border-radius:5px;padding:11px 14px;font-weight:600;text-decoration:none;min-height:44px}
 :is(.whatsapp-action,.broker-whatsapp,.whatsapp-open,.broker-intro a) .whatsapp-icon,html[data-theme=dark] :is(.whatsapp-action,.broker-whatsapp,.whatsapp-open,.broker-intro a) .whatsapp-icon{color:var(--whatsapp-ink)}
 :is(.whatsapp-action,.broker-whatsapp,.whatsapp-open,.broker-intro a):hover{filter:brightness(.95)}
 .map-explorer .broker-intro{padding:6px 8px;gap:10px}.broker-intro a,html[data-theme=dark] .broker-intro a{padding:7px 10px;min-height:34px;font-size:13px}
@@ -194,3 +194,69 @@ html[data-theme=dark] :is(a,button).whatsapp-action,html[data-theme=dark] .broke
 .friend-share{position:relative}.friend-share>summary{display:inline-flex;gap:8px;align-items:center;padding:9px 11px;border:1px solid var(--line);border-radius:5px;font-size:12px;cursor:pointer;list-style:none}.friend-share>summary::-webkit-details-marker{display:none}.friend-share[open]>summary{background:var(--selected-bg)}.friend-share-menu{position:absolute;top:100%;inset-inline-end:0;width:min(300px,calc(100vw - 50px));padding:16px;background:var(--surface);border:1px solid var(--line);box-shadow:0 8px 35px #0003;border-radius:7px;z-index:1800;display:flex;flex-direction:column;gap:10px}.friend-share-menu p{font-size:12px;line-height:1.6;margin:0}.friend-share-menu input{width:100%;min-width:0;border:1px solid var(--line);padding:8px;border-radius:4px;color:var(--ink);background:var(--page);font-size:12px}.detail-content>.friend-share{display:inline-block;margin:0 0 22px 12px}.detail-content>.friend-share .friend-share-menu{inset-inline-start:0;inset-inline-end:auto}.friend-share>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 @media(max-width:760px){.personal-link-heading{grid-template-columns:minmax(0,1fr);gap:18px}.broker-link-example{max-width:none}.personal-share-primary{gap:10px}.personal-share-primary>*{flex:1 1 100%}.personal-share-primary>.email-share>button{width:100%}.personal-share-secondary{align-items:flex-start;flex-direction:column;gap:10px}.explorer-header>.friend-share>summary{padding:6px;border:0}.explorer-header>.friend-share>summary>span{display:none}.friend-share-menu{position:fixed;top:70px;inset-inline-end:14px}.detail-content>.friend-share{display:block;margin:0 0 22px}.detail-content>.friend-share .friend-share-menu{position:absolute;top:100%;inset-inline-start:0;inset-inline-end:auto}.email-preview{padding:14px}}
 .broker-note .broker-whatsapp,html[data-theme=dark] .broker-note .broker-whatsapp{background:var(--whatsapp);color:var(--whatsapp-ink);border-color:var(--whatsapp)}
+
+/* Shared action sizing keeps links, buttons and icon controls aligned. */
+.action-row{--action-height:44px;display:flex;align-items:stretch;flex-wrap:wrap;gap:10px}
+.action-row>:is(button,a),.action-row>:is(.email-share,.friend-share)>:is(button,summary),
+.staff-portal .action-row>:is(button,a),.staff-portal .action-row>.email-share>button,
+.favourites-panel .shortlist-actions.action-row>:is(button,a){display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--action-height);max-width:100%;margin:0;padding:10px 14px;font-size:12px;line-height:1.4;box-sizing:border-box}
+.action-row>:is(button,a)>svg,.action-row>:is(.email-share,.friend-share)>:is(button,summary)>svg{flex-shrink:0}
+.action-row>a{border:1px solid var(--line);border-radius:5px;text-decoration:none;font-weight:400}
+.action-row>a.whatsapp-action,.favourites-panel .action-row>a.whatsapp-open{border-color:var(--whatsapp);font-weight:600}
+.action-row>.email-share{display:flex;flex-direction:column;align-items:flex-start}
+.action-row>.friend-share{display:flex;align-items:stretch}
+.action-row>.friend-share>summary{height:100%}
+.email-preview .share-actions{margin-bottom:0}
+.personal-share-primary,.saved-collection-actions,.share-actions{align-items:stretch}
+.personal-share-secondary>:is(button,a){display:inline-flex;align-items:center;gap:7px;min-height:36px;margin:0;padding:7px 0;font-size:12px;line-height:1.4}
+.collection-share>.action-row{margin:16px 0 12px}
+.collection-share>a{margin-inline:0}
+.publish-actions{margin-top:14px}
+.admin-row>.action-row{flex:0 0 auto;justify-content:flex-end}
+.draft-row{flex-wrap:wrap}.draft-row>.action-row{flex:0 0 auto}
+.staff-portal .action-row-compact>:is(button,a){--action-height:36px;padding:7px 9px;font-size:11px}
+.image-picker{grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))}
+.image-picker>div>.action-row{flex-wrap:nowrap;align-items:stretch;gap:6px;padding:6px}
+.image-picker .action-row>button:first-child{flex:1;min-width:0;gap:5px}
+.image-picker .action-row>button:last-child{flex:0 0 36px;padding:0}
+.detail-actions{margin:0 0 22px}
+.detail-actions>.detail-save{margin:0}
+.detail-actions .friend-share-menu{inset-inline-start:0;inset-inline-end:auto}
+.friend-share-menu>:is(button,a){min-height:44px;font-size:12px;line-height:1.4;padding:10px 14px}
+.staff-user-controls{display:grid;grid-template-columns:124px minmax(80px,auto);gap:10px;align-items:end;flex:0 0 auto}
+.staff-user-controls>label{width:auto;margin:0;gap:6px;font-size:11px}
+.staff-user-controls select,.staff-portal .staff-user-controls>button{min-height:44px;height:44px;margin:0;padding:10px 12px;font-size:12px;line-height:1.4;box-sizing:border-box}
+.staff-user-controls select{width:100%;min-width:0}
+.entry-row{grid-template-columns:repeat(3,minmax(0,1fr));align-items:end}
+.explorer-filter-fields{align-items:end}
+.commute-row{align-items:stretch}.commute-row>:is(select,button){min-height:44px;line-height:1.4;box-sizing:border-box}
+.analytics-consent-actions button{min-height:44px;line-height:1.4}
+.filter-panel-actions{align-items:center;flex-wrap:wrap}.filter-panel-actions button{min-height:44px;line-height:1.4}
+.team-activity .draft-actions.action-row{align-items:stretch}.team-activity .draft-actions.action-row>span{align-self:center}
+@media(max-width:760px){
+ .personal-share-primary.action-row>.email-share{align-items:stretch}
+ .admin-row>.action-row{flex-shrink:1}
+ .staff-portal .admin-row>.action-row{gap:8px}
+ .staff-portal .action-row>:is(button,a){margin:0}
+}
+@media(max-width:560px){
+ .staff-user{flex-wrap:wrap;align-items:flex-start}
+ .staff-user>div:first-child{flex-basis:100%}
+ .staff-user-controls{width:100%;grid-template-columns:minmax(0,1fr) auto}
+ .entry-row{grid-template-columns:minmax(0,1fr)}
+ .admin-row{flex-wrap:wrap}
+ .admin-row>div:first-child{flex-basis:100%}
+ .admin-row>.action-row{justify-content:flex-start}
+ .image-picker{grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))}
+}
+.staff-portal :is(input:not([type=checkbox]),select){min-height:44px;height:44px;line-height:1.4;box-sizing:border-box}
+.detail-actions .friend-share-menu{position:absolute;top:100%}
+
+.collection-editor,.staff-users-grid{align-items:start}
+.detail-actions{position:relative}
+.detail-actions>.friend-share{position:static}
+.detail-actions .friend-share-menu{inset-inline-start:auto;inset-inline-end:0;width:min(300px,calc(100vw - 56px));max-width:100%}
+@media(max-width:760px){
+ .explorer-header .preferences-panel{position:fixed;top:120px;inset-inline:14px;width:auto;max-width:360px;margin-inline-start:auto;max-height:calc(100svh - 140px);overflow:auto}
+ .admin-active .explorer-header .preferences-panel,.explorer-header:has(.how-link[aria-current=page]) .preferences-panel{top:78px;max-height:calc(100svh - 98px)}
+}
