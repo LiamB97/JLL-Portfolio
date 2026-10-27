@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build && node scripts/check-source-imports.mjs"
+  command = "npm run build && node scripts/check-source-imports.mjs && node scripts/stock-intake/collect.mjs"
   publish = "dist"
   functions = "netlify/functions"
 
