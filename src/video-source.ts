@@ -24,3 +24,8 @@ export function videoSource(value:string):VideoSource{
  if(host==='bcove.video'&&/^\/[a-z0-9]+$/i.test(u.pathname))return {kind:'embed',src:u.origin+u.pathname,provider:'Brightcove'};
  return null;
 }
+
+export function videoThumbnails(url:string,poster?:string){
+ const source=videoSource(url);let frame='';if(source?.provider==='YouTube'){const id=new URL(source.src).pathname.split('/').at(-1);frame='https://i.ytimg.com/vi/'+id+'/hqdefault.jpg';}
+ return [...new Set([frame,poster,'/images/city.svg'].filter((value):value is string=>Boolean(value)))];
+}

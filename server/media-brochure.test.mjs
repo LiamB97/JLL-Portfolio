@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {videoSource} from '../src/video-source.ts';
+import {videoSource,videoThumbnails} from '../src/video-source.ts';
 import {buildBrochure,brochureFilename} from '../src/brochure.ts';
 import seed from './data/initial-portfolio.json' with {type:'json'};
 const assets={regular:readFileSync(new URL('../public/fonts/source-sans-3-regular.ttf',import.meta.url)).toString('base64'),semibold:readFileSync(new URL('../public/fonts/source-sans-3-semibold.ttf',import.meta.url)).toString('base64'),photos:{}};
@@ -16,10 +16,10 @@ test('provider URLs preserve video identity and privacy hashes without arbitrary
  assert.equal(videoSource('https://cdn.example/video.mp4?signature=abc').kind,'file');
  for(const url of ['javascript:alert(1)','http://youtu.be/M7lc1UVf-VE','https://www.youtube.com.evil.test/watch?v=M7lc1UVf-VE','https://evil.test/embed/123','https://user:secret@youtu.be/M7lc1UVf-VE'])assert.equal(videoSource(url),null);
 });
-test('brochure PDFs paginate long notes, retain input and attach links to the correct broker',()=>{
+test('brochure PDFs fit development notes to one A4 page, retain input and attach links to the correct broker',()=>{
  const value={...input,intro:'A longer introduction. '.repeat(70),notes:{[input.items[0].id]:'A detailed broker recommendation. '.repeat(48)}};
  const before=JSON.stringify(value);const doc=buildBrochure(value,assets);assert.equal(JSON.stringify(value),before);assert.ok(doc.getNumberOfPages()>=3);assert.match(doc.output(),/^%PDF-/);assert.match(doc.output(),/https:\/\/wa.me\/447900000001/);assert.match(doc.output(),/broker=own-broker/);
- assert.equal(buildBrochure(input,assets).getNumberOfPages(),6);
+ assert.equal(buildBrochure(input,assets).getNumberOfPages(),5);
  const collection=buildBrochure({...input,collection:'selected-collection'},assets);assert.match(collection.output(),/collection=selected-collection/);assert.doesNotMatch(collection.output(),/broker=own-broker/);
  assert.throws(()=>buildBrochure({...input,items:[]},assets));assert.throws(()=>buildBrochure({...input,title:' '},assets));assert.equal(brochureFilename('London / Homes: 2026'),'London-Homes-2026.pdf');
 });
@@ -29,5 +29,16 @@ test('PDF portraits use an active circular clipping path on the cover and contac
  const doc=buildBrochure({...input,broker:{...input.broker,photo}},assets);
  const operations=doc.internal.pages.slice(1).flat().join('\n');
  assert.equal((operations.match(/ c\nW\nn/g)||[]).length,2);
- assert.ok(Math.abs(doc.internal.pageSize.getWidth()-doc.internal.pageSize.getHeight())<.01);
+ assert.ok(Math.abs(doc.internal.pageSize.getWidth()-210)<.01);assert.ok(Math.abs(doc.internal.pageSize.getHeight()-297)<.01);
+});
+
+test('each selected development stays on exactly one page even with maximum-length notes',()=>{
+ const items=seed.developments.slice(0,20).map((d,i)=>({...d,name:i===0?'A very long development name with more detail '.repeat(4):d.name,amenities:Array.from({length:6},(_,n)=>'Key feature '+n+' '+('spacious living '.repeat(10)))}));
+ const notes=Object.fromEntries(items.map(d=>[d.id,'Personal broker advice and viewing information. '.repeat(40).slice(0,1600)]));
+ const doc=buildBrochure({...input,items,notes},assets);assert.equal(doc.getNumberOfPages(),23);
+});
+test('video posters use a real YouTube thumbnail with development and illustration fallbacks',()=>{
+ assert.deepEqual(videoThumbnails('https://youtu.be/M7lc1UVf-VE','/cover.jpg'),['https://i.ytimg.com/vi/M7lc1UVf-VE/hqdefault.jpg','/cover.jpg','/images/city.svg']);
+ assert.deepEqual(videoThumbnails('https://players.brightcove.net/123/default_default/index.html?videoId=456','/cover.jpg'),['/cover.jpg','/images/city.svg']);
+ assert.deepEqual(videoThumbnails('https://cdn.example/video.mp4'),['/images/city.svg']);
 });
