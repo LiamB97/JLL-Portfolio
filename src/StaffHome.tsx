@@ -1,0 +1,9 @@
+import {ArrowRight,FileText,Link,Star} from 'lucide-react';
+import type {StaffUser} from './staff-types';
+export default function StaffHome({user,navigate}:{user:StaffUser;navigate:(tab:string)=>void}){
+ return <section className="staff-section staff-home"><div className="staff-section-title"><div><p className="eyebrow">Ready for your next buyer</p><h1>What would you like to share?</h1><p>Send the full portfolio, handpick homes for a buyer, or put together a brochure.</p></div></div>{!user.whatsapp&&<div className="workspace-setup"><strong>Add your WhatsApp number first</strong><p>Your buyer links and brochures use this number for viewing enquiries.</p><button className="primary" onClick={()=>navigate('profile')}>Set up my profile <ArrowRight size={15}/></button></div>}<div className="workspace-task-grid">{[
+ {id:'collections',Icon:Star,title:'Handpick a collection',copy:'Feature the right developments on a map with your contact details.',action:'Open buyer collections'},
+ {id:'brochures',Icon:FileText,title:'Create a PDF brochure',copy:'Add your introduction and notes, then download a brochure to share.',action:'Open brochures'},
+ {id:'profile',Icon:Link,title:'Share the full portfolio',copy:'Find your personal buyer link, update your WhatsApp number and add your photo.',action:'Open personal link & profile'},
+ ].map(({id,Icon,title,copy,action})=><button className="workspace-task" key={id} onClick={()=>navigate(id)}><Icon size={23}/><strong>{title}</strong><span>{copy}</span><b>{action}<ArrowRight size={15}/></b></button>)}</div><div className="workspace-help"><strong>One portfolio, your relationship.</strong><p>Your links keep you as the buyer’s contact. Collections highlight your selection, and buyers can still explore other homes.</p><button onClick={()=>navigate('guide')}>Read the broker guide <ArrowRight size={14}/></button></div></section>;
+}

@@ -1,0 +1,113 @@
+/* A single top-layer dialog prevents map/search controls overlapping pickers. */
+.workspace-dialog{position:fixed;inset:0;width:min(480px,calc(100vw - 32px));max-width:none;max-height:min(800px,85dvh);padding:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);box-shadow:0 18px 70px #0004;overflow:hidden;flex-direction:column}
+.workspace-dialog[open]{display:flex}
+.workspace-dialog:not([open]){display:none}
+.workspace-dialog::backdrop{background:#131e2980}
+.workspace-dialog-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid var(--line);flex-shrink:0}
+.workspace-dialog-heading h2{font-size:22px;margin:0}
+.workspace-dialog-heading button{min-width:44px;min-height:44px;padding:10px;background:var(--surface);color:var(--ink)}
+.workspace-dialog-body{padding:20px;overflow:auto;overscroll-behavior:contain;min-height:0}
+.workspace-dialog-body p{font-size:14px;line-height:1.65}
+.workspace-dialog-footer{padding:14px 20px;display:flex;justify-content:flex-end;gap:10px;border-top:1px solid var(--line);flex-shrink:0;background:var(--surface)}
+.workspace-dialog-footer button{min-height:44px}
+.map-layer-toggles{display:grid;gap:8px}
+.map-layer-toggles label,.map-line-options label{display:flex;align-items:center;gap:12px;min-height:48px;padding:12px;background:var(--page);border:1px solid var(--line);border-radius:6px;font-size:14px;cursor:pointer}
+.map-layer-toggles label span,.map-line-options label span{flex:1;min-width:0}
+.workspace-dialog input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);flex-shrink:0}
+.map-line-picker{margin-top:24px}
+.map-line-picker h3{font-size:16px;margin-bottom:8px}
+.map-line-picker>button{width:100%;min-height:44px}
+.map-line-picker>button.selected{background:var(--selected-bg)}
+.map-line-options{display:grid;gap:8px;margin:12px 0}
+.map-line-options i{width:24px;height:4px;border-radius:4px;flex-shrink:0}
+.map-line-picker small{display:block;font-size:12px;color:var(--muted);line-height:1.6}
+
+.map-explorer .map-tools-toggle,.map-explorer .map-fit-homes{display:inline-flex;align-items:center;gap:8px;position:absolute;inset-inline-start:auto;inset-inline-end:22px;top:20px;bottom:auto;z-index:600;min-height:44px;padding:10px 14px;font-size:13px;background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:0 3px 12px #0002}
+.map-explorer .map-fit-homes{top:74px}
+.layer-count{background:var(--selected-bg);min-width:20px;border-radius:50%;font-size:11px}
+.explorer-summary-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0}
+.explorer-summary-row .favourites-map-toggle,.explorer-summary-row .explorer-result-count{margin:0;min-height:40px;font-size:11px;padding:9px 12px}
+.map-explorer:is(.view-list,.view-split)>.explorer-tools>.explorer-summary-row{margin:0;flex:1 1 auto}
+.explorer-summary-row .explorer-result-count{flex-wrap:wrap}
+.commute-search-trigger{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;border:0;background:var(--surface);color:var(--ink);padding:12px 14px;min-height:44px;font-size:13px}
+.commute-search-trigger>span{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.commute-search-trigger small{font-size:11px;color:var(--muted)}
+.commute-dialog .commute-search-body{padding:0;max-height:none;overflow:visible}
+.commute-dialog :is(input,select){display:block;min-height:44px;width:100%;font-size:16px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);padding:9px;margin-top:6px}
+.commute-dialog fieldset{border:0;margin:0;padding:0;min-width:0}
+.commute-dialog label{display:block;font-size:13px;margin-bottom:14px;min-width:0}
+.commute-dialog .primary{width:100%;min-height:44px}
+.commute-dialog .commute-progress{flex-wrap:wrap}
+.buyer-filter-dialog .explorer-filter-fields{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+.buyer-filter-dialog .explorer-filter-fields label{font-size:13px}
+.buyer-filter-dialog select{display:block;width:100%;min-height:44px;font-size:16px;margin-top:7px;padding:10px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:5px}
+.buyer-filter-dialog .area-filter-note{font-size:12px;color:var(--muted);margin:18px 0}
+.viewing-top-action{font-size:13px}
+.detail-actions{flex-wrap:wrap}
+.broker-note-copy strong{font-size:23px}
+.broker-note .broker-whatsapp{font-size:15px}
+.map-explorer .explorer-tools:has(.workspace-dialog[open]){overflow:visible}
+
+@media(hover:hover) and (pointer:fine){.workspace-task:hover{border-color:var(--accent);background:var(--page)}
+}
+
+@media(max-width:1100px){.workspace-task-grid{grid-template-columns:minmax(0,1fr)}
+.workspace-task{min-height:0;gap:12px}
+.workspace-task b{margin-top:8px}
+.workspace-content .admin-grid{grid-template-columns:minmax(0,1fr)}
+.collection-saved-panel{grid-template-columns:minmax(0,1fr)}
+}
+
+@media(max-width:760px){.staff-portal{padding:20px 16px 32px}
+.staff-heading{margin:20px 0}
+.staff-heading h1{font-size:26px}
+.staff-workspace-layout{grid-template-columns:minmax(0,1fr);gap:22px;margin-top:20px}
+.workspace-navigation{position:static}
+.workspace-mobile-nav{display:flex!important;margin:0!important;font-size:13px!important}
+.workspace-mobile-nav select{width:100%;font-size:16px!important}
+.workspace-desktop-nav{display:none}
+.workspace-content :is(input:not([type=checkbox]),textarea,select){font-size:16px}
+.workspace-content .staff-section-title h1{font-size:26px}
+.workspace-content .admin-panel{padding:18px}
+.workspace-task{padding:20px}
+.collection-map-options>summary small{display:block;margin:6px 0 0}
+.workspace-content .staff-section-title>.action-row{width:100%}
+.workspace-dialog{inset:auto 0 0;margin:0 auto;width:100%;max-height:88dvh;border-radius:14px 14px 0 0;border-bottom:0}
+.workspace-dialog-heading{padding:14px 18px}
+.workspace-dialog-body{padding:18px}
+.workspace-dialog-footer{padding:12px 18px calc(12px + env(safe-area-inset-bottom))}
+.map-explorer .map-tools-toggle,.map-explorer.view-split .map-tools-toggle{inset-inline-start:14px;inset-inline-end:auto;top:auto;bottom:52px}
+.map-explorer .map-fit-homes{inset-inline-start:14px;inset-inline-end:auto;top:auto;bottom:106px}
+.map-explorer.view-split .map-tools-toggle{bottom:18px}
+.map-explorer.view-split .map-fit-homes{bottom:72px}
+.map-explorer .explorer-tools{width:calc(100% - 28px);max-height:calc(100% - 175px);overscroll-behavior:contain}
+.explorer-summary-row{gap:7px}
+.explorer-summary-row .explorer-result-count{padding:8px 10px}
+.explorer-summary-row .explorer-result-count>span:last-of-type{display:none}
+.broker-intro{padding:10px 12px}
+.featured-intro{padding:12px}
+.explorer-search input{font-size:16px}
+.workspace-dialog :is(button,a){min-height:44px}
+.broker-note .broker-whatsapp{width:100%;justify-self:stretch}
+.detail-content{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+}
+
+
+.viewing-copy{min-width:0}
+.viewing-copy p,.viewing-copy label{font-size:13px;line-height:1.6}
+.viewing-copy textarea{display:block;width:100%;font-size:16px;background:var(--surface);color:var(--ink);padding:10px;border:1px solid var(--line);border-radius:5px;margin-top:8px}
+
+
+.friend-share-trigger{gap:8px;padding:9px 11px;font-size:12px;min-height:40px}
+.friend-share-dialog .friend-share-menu{position:static;inset:auto;width:100%;padding:0;border:0;box-shadow:none}
+.friend-share-dialog .friend-share-menu p{font-size:14px}
+.friend-share-dialog .friend-share-menu input{font-size:16px;min-height:44px}
+.friend-share-dialog :is(button,a){min-height:44px}
+@media(min-width:761px){.header-actions .friend-share-trigger{padding:8px}
+.header-actions .friend-share-trigger>span{display:none}
+}
+@media(max-width:760px){.explorer-header .friend-share-trigger{padding:7px}
+.explorer-header .friend-share-trigger>span{display:none}
+}
+
+.workspace-dialog-footer{flex-wrap:wrap}.workspace-dialog-heading h2{min-width:0;overflow-wrap:anywhere}.staff-heading>div{min-width:0}.staff-heading :is(h1,p){overflow-wrap:anywhere}

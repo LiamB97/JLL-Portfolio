@@ -1,0 +1,61 @@
+/* Broker workspace: task first, settings in their own section. */
+[hidden]{display:none!important}
+
+.staff-portal{max-width:1460px;padding:28px 32px 48px}
+.staff-heading{margin:24px 0}
+.staff-heading h1{font-size:30px;margin-bottom:8px}
+.staff-heading p{margin-bottom:0}
+
+.staff-workspace-layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:32px;align-items:start;margin-top:28px}
+.workspace-navigation{position:sticky;top:20px}
+.workspace-mobile-nav{display:none!important}
+.workspace-nav-group{margin-bottom:22px}
+.workspace-nav-group>p{color:var(--muted);font-size:11px;letter-spacing:.03em;margin:0 12px 7px}
+.workspace-nav-group button{width:100%;justify-content:flex-start;min-height:44px;text-align:left;border-color:transparent;background:transparent;font-size:14px;padding:10px 12px;margin:2px 0}
+.workspace-nav-group button.selected,html[data-theme=dark] .workspace-nav-group button.selected{background:var(--selected-bg);color:var(--ink);border-color:var(--line);font-weight:600}
+.workspace-content{min-width:0}
+.workspace-content>.staff-section,.workspace-content .staff-section-title{margin-top:0}
+.workspace-content .broker-share-panel{margin-top:0}
+.workspace-content .admin-page{max-width:none;padding:0;background:transparent}
+.workspace-content .admin-page>h1{font-size:28px}
+.workspace-content .admin-grid{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:20px}
+.workspace-content :is(.admin-panel,.staff-section){min-width:0}
+.workspace-content h1{font-size:28px}
+.workspace-content p{line-height:1.65}
+.workspace-content label{font-size:13px}
+.workspace-content :is(input,textarea,select){font-size:14px}
+.workspace-content input[type=checkbox]{height:19px;min-height:19px;width:19px;accent-color:var(--accent);flex-shrink:0}
+
+.workspace-task-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.workspace-task{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;text-align:left;gap:16px;min-height:235px;padding:24px;background:var(--surface);border-color:var(--line)}
+.workspace-task>svg{color:var(--accent)}
+.workspace-task strong{font-size:20px;line-height:1.25}
+.workspace-task span{font-size:14px;line-height:1.6;color:var(--muted)}
+.workspace-task b{font-size:13px;display:flex;align-items:center;gap:8px;margin-top:auto;color:var(--accent)}
+.workspace-help{margin:28px 0;padding:24px;border-block:1px solid var(--line)}
+.workspace-help p{font-size:14px;color:var(--muted);margin:8px 0 14px}
+.workspace-help button{font-size:13px}
+.workspace-setup{background:var(--raised);padding:20px;border-radius:7px;margin:0 0 24px}
+.workspace-setup p{font-size:14px;margin:8px 0 16px}
+.workspace-privacy{margin:28px 0 0;font-size:12px;color:var(--muted)}
+.workspace-privacy summary{cursor:pointer;min-height:44px;align-content:center}
+.workspace-privacy p{max-width:850px;line-height:1.7}
+
+.collection-editor,.collection-editor.editing{grid-template-columns:minmax(0,1fr);gap:20px}
+.collection-editor .admin-panel{margin-top:0}
+.collection-saved-panel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.collection-saved-panel>h2,.collection-saved-panel>p{grid-column:1/-1}
+.collection-saved-panel .saved-collection{padding:20px;border:1px solid var(--line);border-radius:7px;min-width:0}
+.saved-collection strong{overflow-wrap:anywhere}
+.collection-map-options{margin:20px 0;border-block:1px solid var(--line);padding:14px 0}
+.collection-map-options>summary{cursor:pointer;font-size:14px;font-weight:600;min-height:44px;align-content:center}
+.collection-map-options>summary small{font-size:12px;font-weight:400;color:var(--muted);margin-inline-start:12px}
+.collection-map-options .transport-defaults{margin:14px 0}
+.collection-choices{overscroll-behavior:contain}
+.stock-toolbar{margin:20px 0}
+.stock-toolbar p{font-size:13px;color:var(--muted);margin:12px 0}
+.stock-toolbar .selected{background:var(--selected-bg)}
+.stock-tool{padding:16px 0;border-block-start:1px solid var(--line);margin:12px 0}
+.stock-tool>summary{font-size:15px;font-weight:600;cursor:pointer;min-height:44px;align-content:center}
+.stock-tool[open]>summary{margin-bottom:12px}
+.stock-tool summary svg{vertical-align:middle;margin-inline-end:6px}

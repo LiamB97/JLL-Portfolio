@@ -7,7 +7,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import * as maplibregl from 'maplibre-gl';
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import '@maplibre/maplibre-gl-leaflet';
-import {Landmark, Layers, TrainFront, AlertCircle, ChevronDown, X, SlidersHorizontal} from 'lucide-react';
+import {Landmark, Layers, TrainFront, AlertCircle, SlidersHorizontal} from 'lucide-react';
+import Modal from './Modal';
 import {landmarks} from './explore';
 import {useLocale} from './i18n';
 import type {Development, TransportNetwork, TransportDefaults} from './types';
@@ -30,10 +31,10 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
   const lastView=useRef<{centre:L.LatLngExpression;zoom:number}>({centre:[51.505,-.085],zoom:11});
   const el=useRef<HTMLDivElement>(null), map=useRef<L.Map|null>(null);
   const markers=useRef<L.MarkerClusterGroup|null>(null), lines=useRef<L.LayerGroup|null>(null), stationLayer=useRef<L.LayerGroup|null>(null),featuredLayer=useRef<L.LayerGroup|null>(null);
-  const [showLines,setShowLines]=useState(false),[showStations,setShowStations]=useState(false),[legend,setLegend]=useState(false),[failed,setFailed]=useState(false),[baseReady,setBaseReady]=useState(false);
+  const [showLines,setShowLines]=useState(false),[showStations,setShowStations]=useState(false),[failed,setFailed]=useState(false),[baseReady,setBaseReady]=useState(false);
   const commuteLayer=useRef<L.LayerGroup|null>(null);
   const landmarkLayer=useRef<L.LayerGroup|null>(null);
-  const [showLandmarks,setShowLandmarks]=useState(true),[toolsOpen,setToolsOpen]=useState(false);
+  const [showLandmarks,setShowLandmarks]=useState(false),[toolsOpen,setToolsOpen]=useState(false);
   const [lineFilter,setLineFilter]=useState<string[]>([]);
   const [stationFilter,setStationFilter]=useState<string[]>([]);
   useEffect(()=>{setShowLines(transportDefaults?.showLines??false);setShowStations(transportDefaults?.showStations??false);setLineFilter(transportDefaults?.lineIds??[]);setStationFilter(transportDefaults?.stationIds??[]);},[transportDefaults]);
@@ -151,14 +152,15 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
     }
   },[showStations,network,lineFilter,stationFilter,dark]);
   return <div className="map-shell" data-map-ready={baseReady}>{!baseReady&&<div className="map-loading-indicator" role="status">{t("Loading London map…")}</div>}<div ref={el} className="map" aria-label={t("Map of London developments")}/>
-    <button className="map-tools-toggle" aria-expanded={toolsOpen} aria-controls="map-tools-panel" onClick={()=>{setToolsOpen(!toolsOpen);if(toolsOpen)setLegend(false);}}><SlidersHorizontal size={16}/>{t('Map tools')}{toolsOpen?<X size={14}/>:<ChevronDown size={14}/>}</button>
-    <div id="map-tools-panel" className={toolsOpen?"map-controls tools-open":"map-controls"} role="group" aria-label={t('Map tools')}><button aria-pressed={showLandmarks} className={showLandmarks?'on':''} onClick={()=>setShowLandmarks(!showLandmarks)}><Landmark size={16}/> {t("Landmarks")}</button>
-      <button aria-pressed={showStations} disabled={!network} className={showStations?'on':''} onClick={()=>{setShowStations(!showStations);if(!showStations)setShowLines(true);}}><TrainFront size={16}/> {t("Stations")}</button>
-      <button aria-pressed={showLines} disabled={!network} className={showLines?'on':''} onClick={()=>{setShowLines(!showLines);setLegend(!showLines);}}><Layers size={16}/> {t("TfL lines")}</button>
-      {showLines&&<button className="line-picker-toggle" aria-expanded={legend} onClick={()=>setLegend(!legend)}><ChevronDown size={14}/> {t("Lines")}</button>}
-    </div>
-    {showLines&&legend&&network&&<section className="line-legend" aria-label={t("TfL line legend")}><div className="line-legend-heading"><strong>{t("Explore London's connections")}</strong><button aria-label={t("Close line legend")} onClick={()=>setLegend(false)}><X size={15}/></button></div><p>{t("Select any combination of lines. Show all lines to reset.")}</p><button className={!lineFilter.length?'line-option selected':'line-option'} aria-pressed={!lineFilter.length} onClick={()=>{setLineFilter([]);setStationFilter([]);}}>{t("Show all lines")}</button><div className="line-options">{network.lines.map(line=><button key={line.id} className={lineFilter.includes(line.id)?'line-option selected':'line-option'} aria-pressed={lineFilter.includes(line.id)} onClick={()=>{setStationFilter([]);setLineFilter(old=>old.includes(line.id)?old.filter(id=>id!==line.id):[...old,line.id]);setShowStations(true);}}><i style={{background:line.colour}}/>{line.name}</button>)}</div><small>{t("Powered by TfL Open Data")}{network.stale?' · Last available network':''}</small>{Boolean(network.missingGeometry?.length)&&<small>{t("Route geometry unavailable for:")} {network.missingGeometry!.join(', ')}</small>}</section>}
-    <span className="map-note">{showStations&&network?t('{count} TfL rail stops · Click a station for its lines',{count:network.stations.filter(s=>stationFilter.length?stationFilter.includes(s.id||''):!lineFilter.length||s.lineIds?.some(id=>lineFilter.includes(id))).length}):t('Zoom in for universities, landmarks & local detail')}</span>
+    <button className="map-tools-toggle" aria-haspopup="dialog" aria-expanded={toolsOpen} onClick={()=>setToolsOpen(true)}><SlidersHorizontal size={16}/>{t('Map layers')}{(showLines||showStations||showLandmarks)&&<span className="layer-count">{[showLines,showStations,showLandmarks].filter(Boolean).length}</span>}</button>
+    {toolsOpen&&<Modal title={t('Map layers')} close={()=>setToolsOpen(false)} className="map-layers-dialog" footer={<button onClick={()=>{setShowLines(false);setShowStations(false);setShowLandmarks(false);setLineFilter([]);setStationFilter([]);}}>{t('Hide all layers')}</button>}>
+      <p className="muted">{t('Keep the focus on homes, or add local context to your map.')}</p>
+      <div className="map-layer-toggles">{[{label:'Landmarks',checked:showLandmarks,set:setShowLandmarks,Icon:Landmark},{label:'Stations',checked:showStations,set:setShowStations,Icon:TrainFront},{label:'TfL lines',checked:showLines,set:setShowLines,Icon:Layers}].map(({label,checked,set,Icon})=><label key={label}><Icon size={18}/><span>{t(label)}</span><input type="checkbox" checked={checked} disabled={label!=='Landmarks'&&!network} onChange={e=>set(e.target.checked)}/></label>)}</div>
+      {network&&(showLines||showStations)&&<section className="map-line-picker"><h3>{t('Show specific lines')}</h3><p>{t('All lines are shown until you pick a specific selection below.')}</p><button aria-pressed={!lineFilter.length} className={!lineFilter.length?'selected':''} onClick={()=>{setLineFilter([]);setStationFilter([]);}}>{t('Show all lines')}</button><div className="map-line-options">{network.lines.map(line=><label key={line.id}><i style={{background:line.colour}}/><span>{line.name}</span><input type="checkbox" checked={lineFilter.includes(line.id)} onChange={()=>{setStationFilter([]);setLineFilter(old=>!old.length?[line.id]:old.includes(line.id)?old.filter(id=>id!==line.id):[...old,line.id]);}}/></label>)}</div>{Boolean(stationFilter.length)&&<p>{t('This collection shows selected stations. Choosing lines will show stops on those lines.')}</p>}<small>{t('Powered by TfL Open Data')}{network.stale?' · Last available network':''}</small>{Boolean(network.missingGeometry?.length)&&<small>{t('Route geometry unavailable for:')} {network.missingGeometry!.join(', ')}</small>}</section>}
+      {!network&&<p role="status">{t('Transport layers are temporarily unavailable. You can still browse developments and landmarks.')}</p>}
+    </Modal>}
+    <button className="map-fit-homes" disabled={!items.length} onClick={()=>{const m=map.current;if(!m||!items.length)return;const size=m.getSize();m.fitBounds(L.latLngBounds([...items,...(commuteDestination?[commuteDestination]:[])].map(d=>[d.lat,d.lng] as [number,number])),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(260,size.y*.35)],paddingBottomRight:[45,90],maxZoom:14});}}>{t('Show matching homes')}</button>
+    <span className="map-note">{showStations&&network?t('{count} TfL rail stops · Click a station for its lines',{count:network.stations.filter(s=>stationFilter.length?stationFilter.includes(s.id||''):!lineFilter.length||s.lineIds?.some(id=>lineFilter.includes(id))).length}):t('Select a development to explore homes, photos and viewing details')}</span>
     {transportError&&<div className="transport-notice" role="status">{t("TfL network temporarily unavailable. Development browsing is still available.")}</div>}
     {failed&&<div className="map-error"><AlertCircle size={16}/> {t("Some map detail could not load. You can still browse developments in List.")}</div>}
   </div>;
