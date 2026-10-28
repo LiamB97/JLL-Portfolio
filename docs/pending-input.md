@@ -24,3 +24,5 @@ The batch does not change staff permissions, accounts, buyer collections or anal
 In Manage → Buyer collections, enable TfL lines and/or stations under **Set the scene for your buyer**. Choose specific lines and optionally search for individual stations. Save changes or create the buyer link to save these settings with the collection. Empty selections mean all lines or all stations on the selected lines. Explicit station choices can be on any line. Buyers can change the transport controls in Map tools.
 
 Personal links do not use transport defaults. Previously saved personal defaults are ignored. Collections without saved defaults open with transport overlays off. Collection settings remain independent of the owning broker's personal profile.
+
+Collection maps frame the featured developments together with explicitly selected stations when Show stations is enabled. Full routes and automatically included stops do not affect the opening view. If transport data arrives after the developments, the framing updates once those selected stations are available.

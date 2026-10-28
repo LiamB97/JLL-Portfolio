@@ -100,7 +100,27 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
   const framedFavourites=useRef(false);
   useEffect(()=>{if(!favouritesOnly){framedFavourites.current=false;return;}if(framedFavourites.current||!items.length||!map.current)return;const size=map.current.getSize();map.current.fitBounds(L.latLngBounds(items.map(d=>[d.lat,d.lng] as [number,number])),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(230,size.y*.35)],paddingBottomRight:[35,Math.min(65,size.y*.15)],maxZoom:14});framedFavourites.current=true;},[favouritesOnly,items,dark]);
   const framedCollection=useRef('');
-  useEffect(()=>{if(favouritesOnly)return;const homes=items.filter(d=>featuredIds.includes(d.id));const key=homes.map(d=>d.id).join(',')+'|'+items.length;if(!homes.length||key===framedCollection.current)return;const m=map.current;if(m){const size=m.getSize();m.fitBounds(L.latLngBounds(homes.map(d=>[d.lat,d.lng] as [number,number])),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(215,size.y*.3)],paddingBottomRight:[35,Math.min(65,size.y*.15)],maxZoom:14});framedCollection.current=key;}},[featuredIds,items,dark,favouritesOnly]);
+  useEffect(()=>{
+    if(favouritesOnly)return;
+    const homes=items.filter(d=>featuredIds.includes(d.id));
+    if(!homes.length)return;
+    // Frame only explicitly selected, visible stations, never whole routes or
+    // every stop on a selected line. Recompute when the network arrives later.
+    const stations=transportDefaults?.showStations
+      ?network?.stations.filter(s=>s.id&&transportDefaults.stationIds.includes(s.id))||[]
+      :[];
+    const points=[...homes,...stations]
+      .filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng))
+      .map(p=>[p.lat,p.lng] as [number,number]);
+    const key=JSON.stringify(points)+'|'+items.length;
+    if(!points.length||key===framedCollection.current)return;
+    const m=map.current;
+    if(m){
+      const size=m.getSize();
+      m.fitBounds(L.latLngBounds(points),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(215,size.y*.3)],paddingBottomRight:[35,Math.min(65,size.y*.15)],maxZoom:14});
+      framedCollection.current=key;
+    }
+  },[featuredIds,items,network,transportDefaults,dark,favouritesOnly]);
   useEffect(()=>{const d=items.find(d=>d.id===selected);if(d)map.current?.flyTo([d.lat,d.lng],14,{duration:window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:.7});},[selected,dark]);
   useEffect(()=>{
     const group=lines.current;if(!group)return;group.clearLayers();if(!showLines)return;
