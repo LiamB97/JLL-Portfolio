@@ -14,6 +14,8 @@ import {useLocale} from './i18n';
 import type {Development, TransportNetwork, TransportDefaults} from './types';
 
 maplibregl.setWorkerUrl(maplibreWorkerUrl);
+const osmAttribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+const vectorAttribution='<a href="https://openfreemap.org">OpenFreeMap</a> · &copy; <a href="https://openmaptiles.org">OpenMapTiles</a>';
 const frameOptions:L.FitBoundsOptions={paddingTopLeft:[24,24],paddingBottomRight:[24,84],maxZoom:14};
 
 function stationPopup(station:TransportNetwork['stations'][number], network:TransportNetwork) {
@@ -44,13 +46,15 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
     if(!el.current)return;setBaseReady(false);setFailed(false);
     const m=L.map(el.current,{zoomControl:false,scrollWheelZoom:true,minZoom:8,maxZoom:19}).setView(lastView.current.centre,lastView.current.zoom);map.current=m;
     L.control.zoom({position:'bottomright'}).addTo(m);
+    m.attributionControl.setPrefix(false);
+    m.attributionControl.addAttribution(osmAttribution);
+    m.attributionControl.addAttribution('Powered by <a href="https://tfl.gov.uk">TfL Open Data</a>');
     m.createPane('transportLines');m.getPane('transportLines')!.style.zIndex='410';
     m.createPane('landmarks');m.getPane('landmarks')!.style.zIndex='430';
     m.createPane('transportStations');m.getPane('transportStations')!.style.zIndex='450';
     let vector:L.MaplibreGL|null=null, fallback=false, vectorLoaded=false;
-    const rasterFallback=()=>{if(fallback)return;fallback=true;vector?.remove();L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',maxZoom:19}).on('load',()=>setBaseReady(true)).on('tileerror',()=>setFailed(true)).addTo(m);};
-    try{vector=L.maplibreGL({style:'https://tiles.openfreemap.org/styles/'+(dark?'dark':'positron'),attributionControl:false,interactive:false}).addTo(m);}catch{rasterFallback();}
-    m.attributionControl.addAttribution('<a href="https://openfreemap.org">OpenFreeMap</a> · <a href="https://openmaptiles.org">OpenMapTiles</a> · &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · Powered by <a href="https://tfl.gov.uk">TfL Open Data</a>');
+    const rasterFallback=()=>{if(fallback)return;fallback=true;vector?.remove();m.attributionControl.removeAttribution(vectorAttribution);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:osmAttribution,maxZoom:19}).on('load',()=>setBaseReady(true)).on('tileerror',()=>setFailed(true)).addTo(m);};
+    try{vector=L.maplibreGL({style:'https://tiles.openfreemap.org/styles/'+(dark?'dark':'positron'),attributionControl:false,interactive:false}).addTo(m);m.attributionControl.addAttribution(vectorAttribution);}catch{rasterFallback();}
     const gl=vector?.getMaplibreMap();
     const styleTimeout=window.setTimeout(()=>{if(!vectorLoaded)rasterFallback();},12000);
     gl?.on('load',()=>{
