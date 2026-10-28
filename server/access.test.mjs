@@ -107,3 +107,17 @@ test('transport defaults belong only to collections, never personal links',async
  }
  assert.deepEqual((await e.call('collections/'+c.data.slug)).data.transportDefaults,defaults);
 });
+
+test('broker portraits save only to the signed-in profile, persist and can be removed',async()=>{
+ const {readFileSync}=await import('node:fs');const photo='data:image/jpeg;base64,'+readFileSync(new URL('./fixtures/profile-square.jpg',import.meta.url)).toString('base64');
+ const e=environment(),admin=await e.owner(),a=await e.broker(admin),b=await e.broker(admin,'another@example.test');
+ assert.equal((await e.call('admin/profile',{method:'POST',actor:a,csrf:false,body:{photo}})).status,403);
+ const saved=await e.call('admin/profile',{method:'POST',actor:a,body:{photo,userId:b.user.id}});assert.equal(saved.status,200);assert.equal(saved.data.photo,photo);assert.equal(saved.data.whatsapp,a.user.whatsapp);
+ assert.equal((await e.call('access/me',{actor:a})).data.user.photo,photo);assert.equal((await e.call('brokers/'+a.user.shareSlug)).data.photo,photo);assert.equal((await e.call('brokers/'+b.user.shareSlug)).data.photo,'');
+ const c=await e.call('admin/collections',{method:'POST',actor:a,body:{title:'With portrait',developmentIds:[samples[0].id]}});assert.equal((await e.call('collections/'+c.data.slug)).data.broker.photo,photo);
+ await e.call('admin/profile',{method:'POST',actor:a,body:{whatsapp:'+447900000099'}});assert.equal((await e.call('brokers/'+a.user.shareSlug)).data.photo,photo);
+ assert.equal((await e.repository.read()).users.find(u=>u.id===a.user.id).photo,photo);
+ const cold=accessService(e.repository,e.secret);assert.equal((await cold.publicBroker(a.user.shareSlug)).photo,photo);
+ for(const invalid of ['data:image/svg+xml;base64,PHN2Zy8+','https://example.com/photo.jpg','data:image/jpeg;base64,aGVsbG8=',null,'x'.repeat(180001)])assert.equal((await e.call('admin/profile',{method:'POST',actor:a,body:{photo:invalid}})).status,422);
+ assert.equal((await e.call('admin/profile',{method:'POST',actor:a,body:{photo:''}})).data.photo,'');assert.equal((await e.call('brokers/'+a.user.shareSlug)).data.photo,'');
+});

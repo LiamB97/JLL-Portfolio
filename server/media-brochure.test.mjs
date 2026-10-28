@@ -19,7 +19,15 @@ test('provider URLs preserve video identity and privacy hashes without arbitrary
 test('brochure PDFs paginate long notes, retain input and attach links to the correct broker',()=>{
  const value={...input,intro:'A longer introduction. '.repeat(70),notes:{[input.items[0].id]:'A detailed broker recommendation. '.repeat(48)}};
  const before=JSON.stringify(value);const doc=buildBrochure(value,assets);assert.equal(JSON.stringify(value),before);assert.ok(doc.getNumberOfPages()>=3);assert.match(doc.output(),/^%PDF-/);assert.match(doc.output(),/https:\/\/wa.me\/447900000001/);assert.match(doc.output(),/broker=own-broker/);
- assert.equal(buildBrochure(input,assets).getNumberOfPages(),3);
+ assert.equal(buildBrochure(input,assets).getNumberOfPages(),6);
  const collection=buildBrochure({...input,collection:'selected-collection'},assets);assert.match(collection.output(),/collection=selected-collection/);assert.doesNotMatch(collection.output(),/broker=own-broker/);
  assert.throws(()=>buildBrochure({...input,items:[]},assets));assert.throws(()=>buildBrochure({...input,title:' '},assets));assert.equal(brochureFilename('London / Homes: 2026'),'London-Homes-2026.pdf');
+});
+
+test('PDF portraits use an active circular clipping path on the cover and contact pages',()=>{
+ const photo='data:image/jpeg;base64,'+readFileSync(new URL('./fixtures/profile-square.jpg',import.meta.url)).toString('base64');
+ const doc=buildBrochure({...input,broker:{...input.broker,photo}},assets);
+ const operations=doc.internal.pages.slice(1).flat().join('\n');
+ assert.equal((operations.match(/ c\nW\nn/g)||[]).length,2);
+ assert.ok(Math.abs(doc.internal.pageSize.getWidth()-doc.internal.pageSize.getHeight())<.01);
 });
