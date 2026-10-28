@@ -52,3 +52,19 @@ Browser inventory reports **Local browser use is disabled in Work settings**. No
 5. Generate and preview a brochure, then try PDF attachment sharing on the broker's phone and email app. URI-based sharing requires attaching the downloaded PDF.
 
 The existing large MapLibre chunk warning remains in the production build; map and staff code continue to load separately from the initial application bundle.
+
+
+## Mobile screenshot follow-up
+
+The next set of screenshots exposed remaining problems in the old header and the activity date form. The deployed bundles were checked directly: the previous Map layers dialog and workspace were present, but that did not validate the rest of the phone layout.
+
+| Before | After | Why |
+| --- | --- | --- |
+| Header controls could wrap into extra rows and overlap the map | A dedicated header component; logo/favourites/menu row and an explicit Map/Split/List row on phones | Keep the header height determined by its contents and layout, without competing legacy rules. |
+| Sharing, preferences, help and Manage all occupied the header | Secondary actions grouped in one menu | Preserve space for discovering homes. |
+| Search, commute, favourites and count cards floated over map pins | Search and a compact commute/result row in normal flow above the map; favourites-only moved into Filters | The map receives its own uninterrupted area. |
+| Map framing reserved space for the old floating search panel | Shared framing padding around the actual map viewport | Centre results within the available map. |
+| Activity date inputs could exceed their grid tracks | Single-column filters on phones; labels and controls have explicit shrink/width constraints and consistent height | Keep native date fields contained and aligned. |
+| A source push was the only recorded publication evidence | The build emits release.json containing only the commit and build time | Check the public deployment against the intended commit. |
+
+Obsolete header/map layout rules were removed, while shared dark-theme selectors were preserved. Keyboard access, broker/collection attribution and the staff role model remain covered by automated checks. Native Safari layout and phone interactions are still not verified while Browser use is disabled.

@@ -228,7 +228,11 @@
     "Any price": "أي سعر",
     "Up to {price}": "حتى {price}",
     "Starting price: low to high": "السعر الابتدائي: من الأقل إلى الأعلى",
-    "Select a development to explore homes, photos and viewing details": "اختر مشروعًا لاستعراض المنازل والصور وتفاصيل المعاينة"
+    "Select a development to explore homes, photos and viewing details": "اختر مشروعًا لاستعراض المنازل والصور وتفاصيل المعاينة",
+    "Open menu": "فتح القائمة",
+    "Portfolio menu": "قائمة المحفظة",
+    "Portfolio navigation": "التنقل في المحفظة",
+    "Broker workspace": "مساحة عمل الوسيط"
   },
   "zh-CN": {
     "Map": "地图",
@@ -459,7 +463,11 @@
     "Any price": "不限价格",
     "Up to {price}": "最高 {price}",
     "Starting price: low to high": "起价：从低到高",
-    "Select a development to explore homes, photos and viewing details": "选择楼盘以查看住宅、照片和看房详情"
+    "Select a development to explore homes, photos and viewing details": "选择楼盘以查看住宅、照片和看房详情",
+    "Open menu": "打开菜单",
+    "Portfolio menu": "房源集菜单",
+    "Portfolio navigation": "房源集导航",
+    "Broker workspace": "经纪人工作台"
   },
   "tr": {
     "Map": "Harita",
@@ -690,6 +698,10 @@
     "Any price": "Tüm fiyatlar",
     "Up to {price}": "{price} tutarına kadar",
     "Starting price: low to high": "Başlangıç fiyatı: düşükten yükseğe",
-    "Select a development to explore homes, photos and viewing details": "Konutları, fotoğrafları ve gösterim bilgilerini incelemek için bir proje seçin"
+    "Select a development to explore homes, photos and viewing details": "Konutları, fotoğrafları ve gösterim bilgilerini incelemek için bir proje seçin",
+    "Open menu": "Menüyü aç",
+    "Portfolio menu": "Portföy menüsü",
+    "Portfolio navigation": "Portföy gezinmesi",
+    "Broker workspace": "Danışman çalışma alanı"
   }
 }

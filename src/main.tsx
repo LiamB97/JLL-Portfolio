@@ -1,32 +1,31 @@
 import Modal from './Modal';
+import PortfolioHeader,{type PortfolioView as View} from './PortfolioHeader';
 import {searchDevelopments} from './portfolio-search';
 import CommuteSearch from './CommuteSearch';
 import {commuteMatches,type CommuteReport} from './commute';
-import ShareWithFriend from './ShareWithFriend';
 import WhatsAppIcon from './WhatsAppIcon';
 import React, {useCallback, useEffect, useState, useRef, useMemo, lazy, Suspense} from 'react';
 import {createRoot} from 'react-dom/client';
-import {ArrowUpRight, ArrowRight, MapPin, Search, SlidersHorizontal, Map as MapIcon, LayoutGrid, Columns2, X, TrainFront, ChevronLeft, ChevronRight, Check, ArrowLeft, Building2, Settings, Heart, Star, CircleHelp, ChevronDown} from 'lucide-react';
+import {ArrowUpRight,ArrowRight,MapPin,Search,SlidersHorizontal,X,TrainFront,Building2,Heart,Star,ChevronDown} from 'lucide-react';
 const PortfolioMap=lazy(()=>import('./Map'));
 const BuyerGuide=lazy(()=>import('./BuyerGuide'));
 const StaffPortal=lazy(()=>import('./StaffPortal'));
-import {areas,regions,nearArea,regionFor} from './explore';
+import {areas,regions} from './explore';
 import Favourites from './Favourites';
 import {useFavourites} from './shortlist';
-import {type Development, type Station, type TransportNetwork, type Connections, type BuyerCollection,type BrokerCard, money, bedroomLabel, distance, specificPropertyTypes} from './types';
+import {type Development,type TransportNetwork, type BuyerCollection,type BrokerCard, money, bedroomLabel,specificPropertyTypes} from './types';
 import './style.css';
 import './brand.css';
 import './workspace.css';
 import './portfolio-ui.css';
-import Preferences from './Preferences';
+import './discovery.css';
 import {PreferencesProvider,useLocale} from './i18n';
 import Detail from './Detail';
 import AnalyticsConsent from './AnalyticsConsent';
 import {track,setAnalyticsContext,setCurrentDevelopment} from './analytics';
 
-type View = 'map' | 'split' | 'list';
 function App() {
-  const {t,dark,language}=useLocale();
+  const {t,language}=useLocale();
   const [items, setItems] = useState<Development[]>([]);
   const [network, setNetwork] = useState<TransportNetwork|null>(null);
   const [transportError,setTransportError]=useState('');
@@ -76,54 +75,37 @@ function App() {
   useEffect(()=>{setAnalyticsContext({language,link_kind:collection?'collection':broker?'broker':'general',...(broker?{broker_link_id:broker.slug}:{}),...(collection?{collection_id:collection.slug}:{})},!loading&&!linkLoading);},[language,broker,collection,loading,linkLoading]);
   useEffect(()=>{setCurrentDevelopment(!admin&&!howItWorks&&active?active.id:null);},[selected,active?.id,admin,howItWorks]);
   useEffect(()=>{if(!query.trim()||admin)return;const timer=setTimeout(()=>track('search_used',{result_count:filtered.length}),700);return()=>clearTimeout(timer);},[query,admin]);
-  const filterCount = [beds,budget,region,area,commute].filter(Boolean).length;
+  const filterCount = [beds,budget,region,area,favouritesOnly,featuredOnly].filter(Boolean).length;
   const reset = () => {setCommute(null);setCommuteResetKey(n=>n+1); setQuery(''); setBeds('');setBudget(''); setFeaturedOnly(false);setFavouritesOnly(false);setRegion('');setArea(''); };
 
   return <div className={`portfolio-app ${admin ? 'admin-active' : 'explorer-active'}`}>
-    <header className="explorer-header" dir="ltr">
-      <a className="brand" href="#" aria-label={t("JLL Residential home")}>
-        <img className="official-logo" src={dark?'/images/jll-residential-dark.svg?v=2026-01':'/images/jll-residential-light.svg?v=2026-01'} alt="JLL Residential"/>
-
-      </a>
-      {!admin&&!howItWorks&&<h1 className="nav-title">London New Homes Portfolio</h1>}<div className="header-actions">
-      {!admin&&!howItWorks && <div className="explorer-view-toggle" role="group" aria-label={t("Portfolio view")}>
-        {([{value:'map', label:'Map', icon:MapIcon}, {value:'split', label:'Split', icon:Columns2}, {value:'list', label:'List', icon:LayoutGrid}] as const).map(({value, label, icon:Icon}) =>
-          <button key={value} aria-label={t(label)} title={t(label)} aria-pressed={view === value} className={view === value ? 'chosen' : ''} onClick={() => {setView(value);track('view_change',{view_mode:value});}}><Icon size={16}/><span>{t(label)}</span></button>
-        )}
-      </div>}
-      {!admin&&!howItWorks&&<button className="shortlist-header-button" aria-label={t('Favourites, {count} saved',{count:favourites.ids.length})} onClick={()=>{setSelected(null);setShowFavourites(true);track('shortlist_open',{saved_count:favourites.ids.length});}}><Heart size={17}/><span>{t("Favourites")}</span>{favourites.ids.length>0&&<b>{favourites.ids.length}</b>}</button>}
-      {!admin&&<a className={howItWorks?'how-link selected':'how-link'} href="#how-it-works" aria-label={t('How it works')} aria-current={howItWorks?'page':undefined} onClick={()=>{setSelected(null);setShowFavourites(false);setFilters(false);}}><CircleHelp size={18}/><span>{t('How it works')}</span></a>}
-      {!admin&&!howItWorks&&<ShareWithFriend/>}
-      <Preferences/>
-      <a className="manage-link" href="#admin" aria-label={t("Manage portfolio")} title={t("Manage portfolio")}><Settings size={17}/><span>{t("Manage")}</span></a>
-    </div></header>
-    {admin ? <Suspense fallback={<p className="staff-portal">{t("Loading staff workspace…")}</p>}><div dir="ltr" lang="en"><StaffPortal items={items} onChange={refresh}/></div></Suspense> : howItWorks?<Suspense fallback={<p className="staff-portal">{t('Loading guide…')}</p>}><BuyerGuide/></Suspense> : <main className={`map-explorer view-${view}`} aria-label={t("London development explorer")}>
-      <div className="explorer-tools">
-        <form className="explorer-search" onSubmit={e=>e.preventDefault()}>
+    <PortfolioHeader exploring={!admin&&!howItWorks} staff={admin} view={view} setView={next=>{setView(next);track('view_change',{view_mode:next});}} saved={favourites.ids.length} openFavourites={()=>{setSelected(null);setShowFavourites(true);track('shortlist_open',{saved_count:favourites.ids.length});}} onNavigate={()=>{setSelected(null);setShowFavourites(false);setFilters(false);}}/>
+    {admin ? <Suspense fallback={<p className="staff-portal">{t("Loading staff workspace…")}</p>}><div dir="ltr" lang="en"><StaffPortal items={items} onChange={refresh}/></div></Suspense> : howItWorks?<Suspense fallback={<p className="staff-portal">{t('Loading guide…')}</p>}><BuyerGuide/></Suspense> : <main className={`discovery-page view-${view}`} aria-label={t("London development explorer")}>
+      <div className="discovery-toolbar">
+        <form className="discovery-search" onSubmit={e=>e.preventDefault()}>
           <Search size={18}/>
           <input aria-label={t("Search by area, development or postcode")} placeholder={t("Search an area, development or postcode")} value={query} onChange={e => setQuery(e.target.value)}/>
           {query && <button type="button" className="clear-search" aria-label={t("Clear search")} onClick={() => setQuery('')}><X size={15}/></button>}
-          <button type="button" aria-label={t("Filters")} className={`explorer-filter-button ${filterCount ? 'filtered' : ''}`} aria-expanded={filters} aria-haspopup="dialog" onClick={() => {setFilters(!filters);}}><SlidersHorizontal size={16}/><span>{t("Filters")}</span>{filterCount > 0 && <b>{filterCount}</b>}</button>
+          <button type="button" aria-label={t("Filters")} className={`discovery-filter-trigger ${filterCount ? 'filtered' : ''}`} aria-expanded={filters} aria-haspopup="dialog" onClick={() => {setFilters(!filters);}}><SlidersHorizontal size={16}/><span>{t("Filters")}</span>{filterCount > 0 && <b>{filterCount}</b>}</button>
         </form>
-        <CommuteSearch items={items} onChange={setCommute} resetKey={commuteResetKey}/>
         {filters && <Modal title={t("Find your London home")} close={()=>setFilters(false)} className="buyer-filter-dialog" doneLabel={t('Show {count} developments',{count:filtered.length})} footer={<button onClick={reset}>{t("Reset filters")}</button>}>
 
           <div className="explorer-filter-fields"><label>{t("London region")}<select aria-label={t("London region")} value={region} onChange={e=>{setRegion(e.target.value);track('filter_apply',{filter_kind:'region'});}}><option value="">{t("All London")}</option>{regions.map(r=><option key={r} value={r}>{t(r)}</option>)}</select></label><label>{t("Near an area")}<select aria-label={t("Near an area")} value={area} onChange={e=>{setArea(e.target.value);track('filter_apply',{filter_kind:'area'});}}><option value="">{t("All areas")}</option>{areas.map(a=><option key={a.name}>{a.name}</option>)}</select></label>
             <label>{t("Bedrooms")}<select aria-label={t("Bedrooms")} value={beds} onChange={e => {setBeds(e.target.value);track('filter_apply',{filter_kind:'bedrooms'});}}><option value="">{t("Any bedrooms")}</option><option value="0">{t("Studio")}</option>{[1,2,3,4].map(n => <option key={n} value={n}>{t('{count} bedrooms',{count:n})}</option>)}</select></label>
             <label>{t('Budget (starting price)')}<select value={budget} onChange={e=>{setBudget(e.target.value);track('filter_apply',{filter_kind:'budget'});}}><option value="">{t('Any price')}</option>{[500000,750000,1000000,1500000,2000000,3000000,5000000].map(n=><option key={n} value={n}>{t('Up to {price}',{price:money(n)})}</option>)}</select></label>
-          </div>
+          </div><div className="discovery-filter-checks"><label><input type="checkbox" checked={favouritesOnly} onChange={e=>{setFavouritesOnly(e.target.checked);setSelected(null);}}/><span>{t('Show favourites only')} ({favourites.ids.length})</span></label>{collection&&<label><input type="checkbox" checked={featuredOnly} onChange={e=>setFeaturedOnly(e.target.checked)}/><span>{t('Show featured only')}</span></label>}</div>
           <p className="area-filter-note">{t("Areas show developments within 2 km of the named centre. Regions are approximate geographic sectors.")}</p>
         </Modal>}
-        <div className="explorer-summary-row"><button className={favouritesOnly?"favourites-map-toggle on":"favourites-map-toggle"} aria-pressed={favouritesOnly} onClick={()=>{setFavouritesOnly(!favouritesOnly);setSelected(null);}}><Heart size={15} fill={favouritesOnly?"currentColor":"none"}/>{t(favouritesOnly?"Show all developments":"Show favourites only")}<span>{favourites.ids.filter(id=>items.some(d=>d.id===id)).length}</span></button>
-        <div className="explorer-result-count" role="status" aria-live="polite">{loading ? 'Loading London homes…' : <><span className="collection-dot"/><strong>{t('{count} developments',{count:filtered.length})}</strong><span>{t("across London")}</span>{(query || filterCount > 0 || favouritesOnly || featuredOnly) && <button onClick={reset}>{t("Clear all")}</button>}</>}</div></div>
-        {collection&&<section className="featured-intro"><span><Star size={15}/><strong>{collection.title}</strong></span><p>{featuredIds.length} {t("featured developments · Picked by")} {collection.brokerName}</p><button aria-pressed={featuredOnly} onClick={()=>setFeaturedOnly(!featuredOnly)}>{featuredOnly?'Explore all developments':'Show featured only'}</button></section>}
-        {broker&&<section className="broker-intro"><span className="broker-label">{t('Your JLL broker')}</span><a aria-label={t('WhatsApp {name}',{name:broker.name})} title={t('WhatsApp {name}',{name:broker.name})} onClick={()=>track('whatsapp_click',{surface:'broker_banner'})} href={'https://wa.me/'+broker.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent(t("Hi, I'd like more information about your London developments."))} target="_blank" rel="noopener noreferrer">{broker.photo?<img className="broker-avatar" src={broker.photo} alt=""/>:<WhatsAppIcon size={18}/>}<strong>{broker.name}</strong></a></section>}
+        <CommuteSearch items={items} onChange={setCommute} resetKey={commuteResetKey}/>
+        <div className="discovery-count" role="status" aria-live="polite">{loading?t('Loading London homes…'):<><strong>{t('{count} developments',{count:filtered.length})}</strong>{(query||filterCount>0||commute)&&<button onClick={reset}>{t('Clear all')}</button>}</>}</div>
+        {collection&&<section className="discovery-collection"><span><Star size={15}/><strong>{collection.title}</strong></span><p>{featuredIds.length} {t("featured developments · Picked by")} {collection.brokerName}</p><button aria-pressed={featuredOnly} onClick={()=>setFeaturedOnly(!featuredOnly)}>{featuredOnly?'Explore all developments':'Show featured only'}</button></section>}
+        {broker&&<section className="discovery-broker"><span className="broker-label">{t('Your JLL broker')}</span><a aria-label={t('WhatsApp {name}',{name:broker.name})} title={t('WhatsApp {name}',{name:broker.name})} onClick={()=>track('whatsapp_click',{surface:'broker_banner'})} href={'https://wa.me/'+broker.whatsapp.replace(/\D/g,'')+'?text='+encodeURIComponent(t("Hi, I'd like more information about your London developments."))} target="_blank" rel="noopener noreferrer">{broker.photo?<img className="broker-avatar" src={broker.photo} alt=""/>:<WhatsAppIcon size={18}/>}<strong>{broker.name}</strong></a></section>}
         {collectionError&&<div className="explorer-message" role="status">{collectionError} {t("You can still explore the full portfolio.")}</div>}
         {error && <div className="explorer-message" role="alert">{error}<button onClick={() => { setError(''); void refresh().catch(e => setError(e.message)); }}>{t("Retry")}</button></div>}
         {!loading && !filtered.length && !error && view === 'map' && <div className="explorer-message"><Building2 size={20}/><div><strong>{t(favouritesOnly?"No favourites match this view":"No homes found")}</strong><p>{t(favouritesOnly?"Save developments with the heart button, or clear your filters to see more favourites.":"Try a different area or broaden your filters.")}</p></div><button onClick={reset}>{t("Reset")}</button></div>}
-        {view==='split'&&<button className="split-browse-jump" onClick={()=>{const heading=document.getElementById('homes-heading');heading?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});heading?.focus({preventScroll:true});}}>{t('View {count} homes below',{count:filtered.length})}<ChevronDown size={17}/></button>}
+        {view==='split'&&<button className="discovery-list-jump" onClick={()=>{const heading=document.getElementById('homes-heading');heading?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});heading?.focus({preventScroll:true});}}>{t('View {count} homes below',{count:filtered.length})}<ChevronDown size={17}/></button>}
       </div>
-      <div className="explorer-workspace">
+      <div className="discovery-workspace">
         {view !== 'list' && <Suspense fallback={<div className="map-shell map-loading" role="status">{t("Loading your London map…")}</div>}><PortfolioMap commuteDestination={commute?.destination} commuteTimes={commuteTimes} transportDefaults={collection?.transportDefaults} items={filtered} selected={selected} onSelect={select} network={network} transportError={transportError} featuredIds={featuredIds} favouriteIds={favourites.ids} favouritesOnly={favouritesOnly}/></Suspense>}
         {view !== 'map' && <section className="explorer-list" aria-label={t("Development listings")}>
           <div className="listing-heading"><h2 id="homes-heading" tabIndex={-1}>{t("London New Homes")}</h2><label>{t("Sort by")}<select aria-label={t("Sort developments")} value={sort} onChange={e => setSort(e.target.value)}><option value="curated">{t("Our collection")}</option><option value="price">{t('Starting price: low to high')}</option><option value="name">{t("Name: A–Z")}</option><option value="area">{t("Area: A–Z")}</option></select></label></div>
@@ -135,7 +117,7 @@ function App() {
           </div>}
         </section>}
       </div>
-      <div className="explorer-disclaimer">{items.some(d => d.sample) ? 'Preview collection · Illustrative stock and prices' : 'Prices & availability subject to broker confirmation'}</div>
+      <div className="discovery-disclaimer">{items.some(d => d.sample) ? 'Preview collection · Illustrative stock and prices' : 'Prices & availability subject to broker confirmation'}</div>
     </main>}
     <AnalyticsConsent/>
     {showFavourites&&!admin&&!howItWorks&&<Favourites items={items} ids={favourites.ids} toggle={favourites.toggle} persistent={favourites.persistent} broker={broker} collection={collection?.slug} close={()=>setShowFavourites(false)} open={id=>{setShowFavourites(false);setSelected(id);}}/>}

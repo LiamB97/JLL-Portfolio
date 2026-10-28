@@ -13,6 +13,22 @@ test('rendered buyer enquiries preserve attribution and broker screens start wit
  globalThis.window=new EventTarget();globalThis.document=new EventTarget();
  const server=await createServer({configFile:false,plugins:[react()],server:{middlewareMode:true},appType:'custom',optimizeDeps:{noDiscovery:true}});
  try{
+  const Header=(await server.ssrLoadModule('/src/PortfolioHeader.tsx')).default;
+  const headerProps={exploring:true,staff:false,view:'split',saved:1,setView(){},openFavourites(){},onNavigate(){}};
+  const header=load(renderToStaticMarkup(createElement(Header,headerProps)));
+  assert.equal(header('.portfolio-header-buttons>button').length,2);
+  assert.equal(header('.portfolio-views>button').length,3);
+  assert.equal(header('.portfolio-views button[aria-pressed=true]').attr('aria-label'),'Split');
+  assert.equal(header('.portfolio-header .friend-share-trigger,.portfolio-header .preferences-toggle').length,0);
+  assert.equal(header('.portfolio-header-title').text(),'London New Homes Portfolio');
+  const staffHeader=load(renderToStaticMarkup(createElement(Header,{...headerProps,exploring:false,staff:true})));
+  assert.equal(staffHeader('.portfolio-header-buttons>button').length,1);assert.equal(staffHeader('.portfolio-views').length,0);
+  const Preferences=(await server.ssrLoadModule('/src/Preferences.tsx')).default;
+  const preferences=load(renderToStaticMarkup(createElement(Preferences)));
+  assert.equal(preferences('label select').length,2);assert.equal(preferences('.preferences-panel').length,0);
+  const Activity=(await server.ssrLoadModule('/src/StaffActivity.tsx')).default;
+  const activity=load(renderToStaticMarkup(createElement(Activity,{request:async()=>[]})));
+  assert.equal(activity('.activity-filters input[type=date]').length,2);assert.equal(activity('.activity-filters label').length,6);assert.equal(activity('.activity-advanced[open]').length,0);assert.equal(activity('.activity-advanced label').length,3);
   const Detail=(await server.ssrLoadModule('/src/Detail.tsx')).default;
   const base={d:seed.developments[0],stations:[],network:null,saved:false,toggleFavourite(){},close(){}};
   const broker={name:'Test Broker',slug:'owner-link',whatsapp:'+447900000001'};

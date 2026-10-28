@@ -7,13 +7,14 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import * as maplibregl from 'maplibre-gl';
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import '@maplibre/maplibre-gl-leaflet';
-import {Landmark, Layers, TrainFront, AlertCircle, SlidersHorizontal} from 'lucide-react';
+import {Landmark, Layers, TrainFront, AlertCircle, SlidersHorizontal,LocateFixed} from 'lucide-react';
 import Modal from './Modal';
 import {landmarks} from './explore';
 import {useLocale} from './i18n';
 import type {Development, TransportNetwork, TransportDefaults} from './types';
 
 maplibregl.setWorkerUrl(maplibreWorkerUrl);
+const frameOptions:L.FitBoundsOptions={paddingTopLeft:[24,24],paddingBottomRight:[24,84],maxZoom:14};
 
 function stationPopup(station:TransportNetwork['stations'][number], network:TransportNetwork) {
   const popup=document.createElement('div');popup.className='transport-popup';
@@ -102,7 +103,7 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
     render();m.on('moveend',render);return()=>{m.off('moveend',render);};
   },[showLandmarks,dark]);
   const framedFavourites=useRef(false);
-  useEffect(()=>{if(!favouritesOnly){framedFavourites.current=false;return;}if(framedFavourites.current||!items.length||!map.current)return;const size=map.current.getSize();map.current.fitBounds(L.latLngBounds(items.map(d=>[d.lat,d.lng] as [number,number])),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(230,size.y*.35)],paddingBottomRight:[35,Math.min(65,size.y*.15)],maxZoom:14});framedFavourites.current=true;},[favouritesOnly,items,dark]);
+  useEffect(()=>{if(!favouritesOnly){framedFavourites.current=false;return;}if(framedFavourites.current||!items.length||!map.current)return;map.current.fitBounds(L.latLngBounds(items.map(d=>[d.lat,d.lng] as [number,number])),frameOptions);framedFavourites.current=true;},[favouritesOnly,items,dark]);
   const framedCollection=useRef('');
   useEffect(()=>{
     if(favouritesOnly||commuteDestination)return;
@@ -120,8 +121,8 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
     if(!points.length||key===framedCollection.current)return;
     const m=map.current;
     if(m){
-      const size=m.getSize();
-      m.fitBounds(L.latLngBounds(points),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(215,size.y*.3)],paddingBottomRight:[35,Math.min(65,size.y*.15)],maxZoom:14});
+
+      m.fitBounds(L.latLngBounds(points),frameOptions);
       framedCollection.current=key;
     }
   },[featuredIds,items,network,transportDefaults,dark,favouritesOnly,commuteDestination]);
@@ -133,7 +134,7 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
     const label=document.createElement('span');label.textContent='Commute destination: '+destination.postcode;
     L.circleMarker([destination.lat,destination.lng],{radius:10,color:dark?'#E0C6AD':'#003E51',fillColor:dark?'#003E51':'#fff',fillOpacity:1,weight:4}).bindTooltip(label,{permanent:true,direction:'right',className:'commute-destination-label'}).addTo(layer);
     const points=[...items,destination].map(p=>[p.lat,p.lng] as [number,number]),key=JSON.stringify(points);
-    if(key!==framedCommute.current){const size=m.getSize();m.fitBounds(L.latLngBounds(points),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(270,size.y*.38)],paddingBottomRight:[45,65],maxZoom:14});framedCommute.current=key;}
+    if(key!==framedCommute.current){m.fitBounds(L.latLngBounds(points),frameOptions);framedCommute.current=key;}
   },[commuteDestination,items,dark]);
   useEffect(()=>{const d=items.find(d=>d.id===selected);if(d)map.current?.flyTo([d.lat,d.lng],14,{duration:window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:.7});},[selected,dark]);
   useEffect(()=>{
@@ -152,14 +153,15 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
     }
   },[showStations,network,lineFilter,stationFilter,dark]);
   return <div className="map-shell" data-map-ready={baseReady}>{!baseReady&&<div className="map-loading-indicator" role="status">{t("Loading London map…")}</div>}<div ref={el} className="map" aria-label={t("Map of London developments")}/>
-    <button className="map-tools-toggle" aria-haspopup="dialog" aria-expanded={toolsOpen} onClick={()=>setToolsOpen(true)}><SlidersHorizontal size={16}/>{t('Map layers')}{(showLines||showStations||showLandmarks)&&<span className="layer-count">{[showLines,showStations,showLandmarks].filter(Boolean).length}</span>}</button>
+    <div className="map-utilities"><button className="map-layer-button" aria-haspopup="dialog" aria-expanded={toolsOpen} onClick={()=>setToolsOpen(true)}><SlidersHorizontal size={16}/>{t('Map layers')}{(showLines||showStations||showLandmarks)&&<span className="layer-count">{[showLines,showStations,showLandmarks].filter(Boolean).length}</span>}</button>
+    <button className="map-fit-button" aria-label={t('Show matching homes')} title={t('Show matching homes')} disabled={!items.length} onClick={()=>{const m=map.current;if(!m||!items.length)return;m.fitBounds(L.latLngBounds([...items,...(commuteDestination?[commuteDestination]:[])].map(d=>[d.lat,d.lng] as [number,number])),frameOptions);}}><LocateFixed size={19}/><span>{t('Show matching homes')}</span></button>
+    </div>
     {toolsOpen&&<Modal title={t('Map layers')} close={()=>setToolsOpen(false)} className="map-layers-dialog" footer={<button onClick={()=>{setShowLines(false);setShowStations(false);setShowLandmarks(false);setLineFilter([]);setStationFilter([]);}}>{t('Hide all layers')}</button>}>
       <p className="muted">{t('Keep the focus on homes, or add local context to your map.')}</p>
       <div className="map-layer-toggles">{[{label:'Landmarks',checked:showLandmarks,set:setShowLandmarks,Icon:Landmark},{label:'Stations',checked:showStations,set:setShowStations,Icon:TrainFront},{label:'TfL lines',checked:showLines,set:setShowLines,Icon:Layers}].map(({label,checked,set,Icon})=><label key={label}><Icon size={18}/><span>{t(label)}</span><input type="checkbox" checked={checked} disabled={label!=='Landmarks'&&!network} onChange={e=>set(e.target.checked)}/></label>)}</div>
       {network&&(showLines||showStations)&&<section className="map-line-picker"><h3>{t('Show specific lines')}</h3><p>{t('All lines are shown until you pick a specific selection below.')}</p><button aria-pressed={!lineFilter.length} className={!lineFilter.length?'selected':''} onClick={()=>{setLineFilter([]);setStationFilter([]);}}>{t('Show all lines')}</button><div className="map-line-options">{network.lines.map(line=><label key={line.id}><i style={{background:line.colour}}/><span>{line.name}</span><input type="checkbox" checked={lineFilter.includes(line.id)} onChange={()=>{setStationFilter([]);setLineFilter(old=>!old.length?[line.id]:old.includes(line.id)?old.filter(id=>id!==line.id):[...old,line.id]);}}/></label>)}</div>{Boolean(stationFilter.length)&&<p>{t('This collection shows selected stations. Choosing lines will show stops on those lines.')}</p>}<small>{t('Powered by TfL Open Data')}{network.stale?' · Last available network':''}</small>{Boolean(network.missingGeometry?.length)&&<small>{t('Route geometry unavailable for:')} {network.missingGeometry!.join(', ')}</small>}</section>}
       {!network&&<p role="status">{t('Transport layers are temporarily unavailable. You can still browse developments and landmarks.')}</p>}
     </Modal>}
-    <button className="map-fit-homes" disabled={!items.length} onClick={()=>{const m=map.current;if(!m||!items.length)return;const size=m.getSize();m.fitBounds(L.latLngBounds([...items,...(commuteDestination?[commuteDestination]:[])].map(d=>[d.lat,d.lng] as [number,number])),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(260,size.y*.35)],paddingBottomRight:[45,90],maxZoom:14});}}>{t('Show matching homes')}</button>
     <span className="map-note">{showStations&&network?t('{count} TfL rail stops · Click a station for its lines',{count:network.stations.filter(s=>stationFilter.length?stationFilter.includes(s.id||''):!lineFilter.length||s.lineIds?.some(id=>lineFilter.includes(id))).length}):t('Select a development to explore homes, photos and viewing details')}</span>
     {transportError&&<div className="transport-notice" role="status">{t("TfL network temporarily unavailable. Development browsing is still available.")}</div>}
     {failed&&<div className="map-error"><AlertCircle size={16}/> {t("Some map detail could not load. You can still browse developments in List.")}</div>}
