@@ -8,7 +8,7 @@ export interface TransportNetwork {source:string;attribution:string;updatedAt:st
 export interface StationRoute extends Station {straightLineKm:number;walking:{distanceMeters:number;durationMinutes:number}|null;cycling:{distanceMeters:number;durationMinutes:number}|null}
 export interface Connections {source:string;updatedAt:string;stations:StationRoute[]}
 
-export interface BrokerCard {transportDefaults?:TransportDefaults;name:string;whatsapp:string;slug:string}
+export interface BrokerCard {name:string;whatsapp:string;slug:string}
 export interface BuyerCollection {transportDefaults?:TransportDefaults;broker?:BrokerCard|null;slug:string;title:string;brokerName:string;developmentIds:string[]}
 
 // New homes describes this entire portfolio, rather than a useful unit type.
