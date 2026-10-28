@@ -10,7 +10,7 @@ import '@maplibre/maplibre-gl-leaflet';
 import {Landmark, Layers, TrainFront, AlertCircle, ChevronDown, X, SlidersHorizontal} from 'lucide-react';
 import {landmarks} from './explore';
 import {useLocale} from './i18n';
-import type {Development, TransportNetwork} from './types';
+import type {Development, TransportNetwork, TransportDefaults} from './types';
 
 maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
@@ -25,7 +25,7 @@ function stationPopup(station:TransportNetwork['stations'][number], network:Tran
   }
   return popup;
 }
-export default function PortfolioMap({items, selected, onSelect, network, transportError,featuredIds=[],favouriteIds=[],favouritesOnly=false}:{items:Development[];selected:string|null;onSelect:(id:string)=>void;network:TransportNetwork|null;transportError:string;featuredIds?:string[];favouriteIds?:string[];favouritesOnly?:boolean}) {
+export default function PortfolioMap({items, selected, onSelect, network, transportError,featuredIds=[],favouriteIds=[],favouritesOnly=false,transportDefaults}:{items:Development[];selected:string|null;onSelect:(id:string)=>void;network:TransportNetwork|null;transportError:string;featuredIds?:string[];favouriteIds?:string[];favouritesOnly?:boolean;transportDefaults?:TransportDefaults}) {
   const {t,dark}=useLocale();
   const lastView=useRef<{centre:L.LatLngExpression;zoom:number}>({centre:[51.505,-.085],zoom:11});
   const el=useRef<HTMLDivElement>(null), map=useRef<L.Map|null>(null);
@@ -34,6 +34,8 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
   const landmarkLayer=useRef<L.LayerGroup|null>(null);
   const [showLandmarks,setShowLandmarks]=useState(true),[toolsOpen,setToolsOpen]=useState(false);
   const [lineFilter,setLineFilter]=useState<string[]>([]);
+  const [stationFilter,setStationFilter]=useState<string[]>([]);
+  useEffect(()=>{setShowLines(transportDefaults?.showLines??false);setShowStations(transportDefaults?.showStations??false);setLineFilter(transportDefaults?.lineIds??[]);setStationFilter(transportDefaults?.stationIds??[]);},[transportDefaults]);
   const shownLines=useMemo(()=>network?.lines.filter(l=>!lineFilter.length||lineFilter.includes(l.id))||[],[network,lineFilter]);
   useEffect(()=>{
     if(!el.current)return;setBaseReady(false);setFailed(false);
@@ -110,11 +112,11 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
   useEffect(()=>{
     const group=stationLayer.current;if(!group)return;group.clearLayers();if(!showStations||!network)return;
     for(const station of network.stations){
-      if(lineFilter.length&&!station.lineIds?.some(id=>lineFilter.includes(id)))continue;
+      if(stationFilter.length?!stationFilter.includes(station.id||''):lineFilter.length&&!station.lineIds?.some(id=>lineFilter.includes(id)))continue;
       const colour=network.lines.find(l=>l.id===(lineFilter.find(id=>station.lineIds?.includes(id))||station.lineIds?.[0]))?.colour||'#596575';
       L.circleMarker([station.lat,station.lng],{pane:'transportStations',radius:6,color:colour,fillColor:dark?'#1F2A35':'#fff',fillOpacity:1,weight:2.5}).bindTooltip(station.name).bindPopup(stationPopup(station,network)).addTo(group);
     }
-  },[showStations,network,lineFilter,dark]);
+  },[showStations,network,lineFilter,stationFilter,dark]);
   return <div className="map-shell" data-map-ready={baseReady}>{!baseReady&&<div className="map-loading-indicator" role="status">{t("Loading London map…")}</div>}<div ref={el} className="map" aria-label={t("Map of London developments")}/>
     <button className="map-tools-toggle" aria-expanded={toolsOpen} aria-controls="map-tools-panel" onClick={()=>{setToolsOpen(!toolsOpen);if(toolsOpen)setLegend(false);}}><SlidersHorizontal size={16}/>{t('Map tools')}{toolsOpen?<X size={14}/>:<ChevronDown size={14}/>}</button>
     <div id="map-tools-panel" className={toolsOpen?"map-controls tools-open":"map-controls"} role="group" aria-label={t('Map tools')}><button aria-pressed={showLandmarks} className={showLandmarks?'on':''} onClick={()=>setShowLandmarks(!showLandmarks)}><Landmark size={16}/> {t("Landmarks")}</button>
@@ -122,8 +124,8 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
       <button aria-pressed={showLines} disabled={!network} className={showLines?'on':''} onClick={()=>{setShowLines(!showLines);setLegend(!showLines);}}><Layers size={16}/> {t("TfL lines")}</button>
       {showLines&&<button className="line-picker-toggle" aria-expanded={legend} onClick={()=>setLegend(!legend)}><ChevronDown size={14}/> {t("Lines")}</button>}
     </div>
-    {showLines&&legend&&network&&<section className="line-legend" aria-label={t("TfL line legend")}><div className="line-legend-heading"><strong>{t("Explore London's connections")}</strong><button aria-label={t("Close line legend")} onClick={()=>setLegend(false)}><X size={15}/></button></div><p>{t("Select any combination of lines. Show all lines to reset.")}</p><button className={!lineFilter.length?'line-option selected':'line-option'} aria-pressed={!lineFilter.length} onClick={()=>setLineFilter([])}>{t("Show all lines")}</button><div className="line-options">{network.lines.map(line=><button key={line.id} className={lineFilter.includes(line.id)?'line-option selected':'line-option'} aria-pressed={lineFilter.includes(line.id)} onClick={()=>{setLineFilter(old=>old.includes(line.id)?old.filter(id=>id!==line.id):[...old,line.id]);setShowStations(true);}}><i style={{background:line.colour}}/>{line.name}</button>)}</div><small>{t("Powered by TfL Open Data")}{network.stale?' · Last available network':''}</small>{Boolean(network.missingGeometry?.length)&&<small>{t("Route geometry unavailable for:")} {network.missingGeometry!.join(', ')}</small>}</section>}
-    <span className="map-note">{showStations&&network?t('{count} TfL rail stops · Click a station for its lines',{count:network.stations.length}):t('Zoom in for universities, landmarks & local detail')}</span>
+    {showLines&&legend&&network&&<section className="line-legend" aria-label={t("TfL line legend")}><div className="line-legend-heading"><strong>{t("Explore London's connections")}</strong><button aria-label={t("Close line legend")} onClick={()=>setLegend(false)}><X size={15}/></button></div><p>{t("Select any combination of lines. Show all lines to reset.")}</p><button className={!lineFilter.length?'line-option selected':'line-option'} aria-pressed={!lineFilter.length} onClick={()=>{setLineFilter([]);setStationFilter([]);}}>{t("Show all lines")}</button><div className="line-options">{network.lines.map(line=><button key={line.id} className={lineFilter.includes(line.id)?'line-option selected':'line-option'} aria-pressed={lineFilter.includes(line.id)} onClick={()=>{setStationFilter([]);setLineFilter(old=>old.includes(line.id)?old.filter(id=>id!==line.id):[...old,line.id]);setShowStations(true);}}><i style={{background:line.colour}}/>{line.name}</button>)}</div><small>{t("Powered by TfL Open Data")}{network.stale?' · Last available network':''}</small>{Boolean(network.missingGeometry?.length)&&<small>{t("Route geometry unavailable for:")} {network.missingGeometry!.join(', ')}</small>}</section>}
+    <span className="map-note">{showStations&&network?t('{count} TfL rail stops · Click a station for its lines',{count:network.stations.filter(s=>stationFilter.length?stationFilter.includes(s.id||''):!lineFilter.length||s.lineIds?.some(id=>lineFilter.includes(id))).length}):t('Zoom in for universities, landmarks & local detail')}</span>
     {transportError&&<div className="transport-notice" role="status">{t("TfL network temporarily unavailable. Development browsing is still available.")}</div>}
     {failed&&<div className="map-error"><AlertCircle size={16}/> {t("Some map detail could not load. You can still browse developments in List.")}</div>}
   </div>;

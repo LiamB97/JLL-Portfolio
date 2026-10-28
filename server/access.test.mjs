@@ -79,3 +79,27 @@ test('duplicate names are rejected atomically and reviewed updates keep stable d
 });
 test('only admins can configure analytics and public configuration exposes no private state',async()=>{const e=environment(),admin=await e.owner(),broker=await e.broker(admin),manager=await e.broker(admin,'analytics-manager@example.test','broker_admin');assert.deepEqual((await e.call('analytics-config')).data,{enabled:false,measurementId:'',teamTracking:true});for(const actor of [broker,manager]){assert.equal((await e.call('admin/analytics',{actor})).status,403);assert.equal((await e.call('admin/analytics',{method:'PUT',actor,body:{enabled:true,measurementId:'G-TEST123456',manualTrackingConfirmed:true}})).status,403);}assert.equal((await e.call('admin/analytics',{method:'PUT',actor:admin,body:{enabled:true,measurementId:'G-TEST123456',teamTracking:true}})).status,422);const saved=await e.call('admin/analytics',{method:'PUT',actor:admin,body:{enabled:true,measurementId:'G-TEST123456',manualTrackingConfirmed:true}});assert.equal(saved.status,200);assert.deepEqual((await e.call('analytics-config')).data,{enabled:true,measurementId:'G-TEST123456',teamTracking:true});const cold=createNetlifyApi({repository:e.repository,password:e.secret});const read=await cold(new Request('https://portfolio.example/api/analytics-config'));assert.deepEqual(await read.json(),{enabled:true,measurementId:'G-TEST123456',teamTracking:true});await e.call('admin/analytics',{method:'PUT',actor:admin,body:{enabled:false,measurementId:'G-TEST123456',manualTrackingConfirmed:true}});assert.deepEqual((await e.call('analytics-config')).data,{enabled:false,measurementId:'',teamTracking:true});});
 test('staff instructions require authentication and respect stock and analytics roles',async()=>{const e=environment();assert.equal((await e.call('admin/guide')).status,401);const admin=await e.owner(),broker=await e.broker(admin),manager=await e.broker(admin,'guide-manager@example.test','broker_admin');const a=(await e.call('admin/guide',{actor:admin})).data,b=(await e.call('admin/guide',{actor:broker})).data,m=(await e.call('admin/guide',{actor:manager})).data;assert.ok(a.chapters.some(x=>x.id==='analytics'));assert.ok(a.chapters.some(x=>x.id==='activity'));assert.ok(a.chapters.some(x=>x.id==='stock'));assert.ok(m.chapters.some(x=>x.id==='stock'));assert.ok(!m.chapters.some(x=>x.id==='analytics'));assert.ok(!m.chapters.some(x=>x.id==='activity'));assert.ok(!b.chapters.some(x=>x.id==='stock'));assert.ok(!b.chapters.some(x=>x.id==='analytics'));assert.ok(!b.chapters.some(x=>x.id==='activity'));assert.ok(b.chapters.some(x=>x.id==='collections'));assert.ok(!JSON.stringify(a).includes(e.secret));});
+
+test('brokers save transport defaults on personal links and independently on collections',async()=>{
+ const e=environment(),admin=await e.owner(),a=await e.broker(admin),b=await e.broker(admin,'second@example.test');
+ const defaults={showLines:true,showStations:true,lineIds:['jubilee'],stationIds:['940GZZDLABR']};
+ const saved=await e.call('admin/profile',{method:'POST',actor:a,body:{transportDefaults:defaults}});
+ assert.equal(saved.status,200);assert.deepEqual(saved.data.transportDefaults,defaults);assert.equal(saved.data.whatsapp,a.user.whatsapp);
+ assert.deepEqual((await e.call('brokers/'+a.user.shareSlug)).data.transportDefaults,defaults);
+ assert.deepEqual((await e.call('access/me',{actor:a})).data.user.transportDefaults,defaults);
+ await e.call('admin/profile',{method:'POST',actor:a,body:{whatsapp:'+447900000099'}});
+ assert.deepEqual((await e.call('brokers/'+a.user.shareSlug)).data.transportDefaults,defaults);
+ assert.equal((await e.call('brokers/'+b.user.shareSlug)).data.transportDefaults,undefined);
+ const off={showLines:false,showStations:false,lineIds:[],stationIds:[]};
+ const c=await e.call('admin/collections',{method:'POST',actor:a,body:{title:'Transport selection',developmentIds:[samples[0].id],transportDefaults:off}});
+ assert.equal(c.status,201);assert.deepEqual((await e.call('collections/'+c.data.slug)).data.transportDefaults,off);
+ const update={title:'Updated transport',developmentIds:[samples[0].id],transportDefaults:defaults};
+ assert.equal((await e.call('admin/collections/'+c.data.id,{method:'PUT',actor:b,body:update})).status,403);
+ assert.equal((await e.call('admin/collections/'+c.data.id,{method:'PUT',actor:a,body:update})).status,200);
+ assert.deepEqual((await e.call('collections/'+c.data.slug)).data.transportDefaults,defaults);
+ for(const invalid of [null,{}, {...defaults,showLines:'yes'},{...defaults,lineIds:['fake-line']},{...defaults,stationIds:['fake-stop']},{...defaults,lineIds:['jubilee',42]}]){
+  assert.equal((await e.call('admin/profile',{method:'POST',actor:a,body:{transportDefaults:invalid}})).status,422);
+  assert.equal((await e.call('admin/collections/'+c.data.id,{method:'PUT',actor:a,body:{...update,transportDefaults:invalid}})).status,422);
+ }
+ assert.deepEqual((await e.call('collections/'+c.data.slug)).data.transportDefaults,defaults);
+});

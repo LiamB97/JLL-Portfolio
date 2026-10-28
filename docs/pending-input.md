@@ -18,3 +18,9 @@ Each unpublished item includes the available source facts, image/video URLs, ori
 Specific review notes include Coronation Square's shared-ownership price, Peninsula Gardens' developer-office address, the separate identity of Copper Yard, and West End Gate's completed status and possible overlap with existing stock. Broadoaks Park is the named out-of-London exception already approved by the owner, and keeps its West Byfleet, Surrey area.
 
 The batch does not change staff permissions, accounts, buyer collections or analytics settings. No buyer addresses or outbound email/WhatsApp delivery have been added. Source parsing remains best effort; a ready-for-review label means required fields are populated, not that a staff member has approved them.
+
+## Broker transport map defaults
+
+In Manage, brokers can save the lines and stations shown on their personal portfolio link using **Save map defaults**. Buyer collections have an independent transport selection saved with the collection. Enable **Show TfL lines** and/or **Show stations**, then choose specific lines and optionally individual stations. Empty selections mean all lines or all stations on the selected lines. Explicit station selections are independent of the displayed lines. Buyers can change the transport controls in Map tools; choosing a line or Show all lines clears the initial individual-station restriction.
+
+Existing links keep their previous map behaviour until defaults are saved. Collection defaults take precedence over the broker's personal defaults; older collections without defaults inherit personal defaults where present.
