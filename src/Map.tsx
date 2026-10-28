@@ -25,12 +25,13 @@ function stationPopup(station:TransportNetwork['stations'][number], network:Tran
   }
   return popup;
 }
-export default function PortfolioMap({items, selected, onSelect, network, transportError,featuredIds=[],favouriteIds=[],favouritesOnly=false,transportDefaults}:{items:Development[];selected:string|null;onSelect:(id:string)=>void;network:TransportNetwork|null;transportError:string;featuredIds?:string[];favouriteIds?:string[];favouritesOnly?:boolean;transportDefaults?:TransportDefaults}) {
+export default function PortfolioMap({items, selected, onSelect, network, transportError,featuredIds=[],favouriteIds=[],favouritesOnly=false,transportDefaults,commuteDestination,commuteTimes={}}:{items:Development[];selected:string|null;onSelect:(id:string)=>void;network:TransportNetwork|null;transportError:string;featuredIds?:string[];favouriteIds?:string[];favouritesOnly?:boolean;transportDefaults?:TransportDefaults;commuteDestination?:{postcode:string;lat:number;lng:number};commuteTimes?:Record<string,number>}) {
   const {t,dark}=useLocale();
   const lastView=useRef<{centre:L.LatLngExpression;zoom:number}>({centre:[51.505,-.085],zoom:11});
   const el=useRef<HTMLDivElement>(null), map=useRef<L.Map|null>(null);
   const markers=useRef<L.MarkerClusterGroup|null>(null), lines=useRef<L.LayerGroup|null>(null), stationLayer=useRef<L.LayerGroup|null>(null),featuredLayer=useRef<L.LayerGroup|null>(null);
   const [showLines,setShowLines]=useState(false),[showStations,setShowStations]=useState(false),[legend,setLegend]=useState(false),[failed,setFailed]=useState(false),[baseReady,setBaseReady]=useState(false);
+  const commuteLayer=useRef<L.LayerGroup|null>(null);
   const landmarkLayer=useRef<L.LayerGroup|null>(null);
   const [showLandmarks,setShowLandmarks]=useState(true),[toolsOpen,setToolsOpen]=useState(false);
   const [lineFilter,setLineFilter]=useState<string[]>([]);
@@ -59,6 +60,7 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
       gl.addLayer({id:'london-university-labels',type:'symbol',source,'source-layer':'poi',minzoom:13,filter:universityFilter,layout:{'text-field':['coalesce',['get','name:en'],['get','name:latin'],['get','name']],'text-font':['Noto Sans Regular'],'text-size':12,'text-anchor':'left','text-offset':[.6,0],'text-max-width':13},paint:{'text-color':dark?'#b6bbd2':'#536183','text-halo-color':dark?'#1F2A35':'#fff','text-halo-width':2}});
       gl.addLayer({id:'london-local-places',type:'symbol',source,'source-layer':'poi',minzoom:16,filter:['!',universityFilter],layout:{'text-field':['coalesce',['get','name:en'],['get','name:latin'],['get','name']],'text-font':['Noto Sans Regular'],'text-size':11,'text-max-width':12},paint:{'text-color':dark?'#a3ada6':'#8b938d','text-halo-color':dark?'#1F2A35':'#fff','text-halo-width':1.5}});
     });
+    commuteLayer.current=L.layerGroup().addTo(m);
     landmarkLayer.current=L.layerGroup().addTo(m);
     markers.current=L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:40,spiderfyOnMaxZoom:true,iconCreateFunction:cluster=>L.divIcon({html:`<span>${cluster.getChildCount()}</span>`,className:'development-cluster',iconSize:[42,42],iconAnchor:[21,21]})}).addTo(m);
     lines.current=L.layerGroup().addTo(m);stationLayer.current=L.layerGroup().addTo(m);featuredLayer.current=L.layerGroup().addTo(m);
@@ -75,9 +77,10 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
       const highlighted=featuredIds.includes(d.id),saved=favouriteIds.includes(d.id);
       const icon=L.divIcon({className:'development-pin-wrap',html:`<span class="development-pin ${d.id===selected?'active':''} ${highlighted?'featured-pin':''} ${saved?'favourite-pin':''}">${saved?'<svg class="pin-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>':'<span class="pin-centre"></span>'}</span>`,iconSize:[34,40],iconAnchor:[17,38]});
       const marker=L.marker([d.lat,d.lng],{icon,keyboard:true,title:d.name+(highlighted?' · '+t('FEATURED'):'')+(saved?' · '+t('Saved to favourites'):''),zIndexOffset:d.id===selected?3000:highlighted?2000:saved?1000:0});
+      if(commuteTimes[d.id]!==undefined){const label=document.createElement('span');label.textContent=d.name+' · '+commuteTimes[d.id]+' min commute';marker.bindTooltip(label);}
       marker.on('add',()=>marker.getElement()?.setAttribute('aria-label',`${d.name}${highlighted?', '+t('FEATURED'):''}${saved?', '+t('Saved to favourites'):''}`)).on('click',()=>onSelect(d.id)).addTo(highlighted||saved?featured:group);
     }
-  },[items,selected,onSelect,featuredIds,favouriteIds,dark,t]);
+  },[items,selected,onSelect,featuredIds,favouriteIds,commuteTimes,dark,t]);
   useEffect(()=>{
     const m=map.current,group=landmarkLayer.current;if(!m||!group)return;
     function render(){
@@ -101,7 +104,7 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
   useEffect(()=>{if(!favouritesOnly){framedFavourites.current=false;return;}if(framedFavourites.current||!items.length||!map.current)return;const size=map.current.getSize();map.current.fitBounds(L.latLngBounds(items.map(d=>[d.lat,d.lng] as [number,number])),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(230,size.y*.35)],paddingBottomRight:[35,Math.min(65,size.y*.15)],maxZoom:14});framedFavourites.current=true;},[favouritesOnly,items,dark]);
   const framedCollection=useRef('');
   useEffect(()=>{
-    if(favouritesOnly)return;
+    if(favouritesOnly||commuteDestination)return;
     const homes=items.filter(d=>featuredIds.includes(d.id));
     if(!homes.length)return;
     // Frame only explicitly selected, visible stations, never whole routes or
@@ -120,7 +123,17 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
       m.fitBounds(L.latLngBounds(points),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(215,size.y*.3)],paddingBottomRight:[35,Math.min(65,size.y*.15)],maxZoom:14});
       framedCollection.current=key;
     }
-  },[featuredIds,items,network,transportDefaults,dark,favouritesOnly]);
+  },[featuredIds,items,network,transportDefaults,dark,favouritesOnly,commuteDestination]);
+  const framedCommute=useRef('');
+  useEffect(()=>{
+    const layer=commuteLayer.current,m=map.current;if(!layer||!m)return;layer.clearLayers();
+    if(!commuteDestination){framedCommute.current='';return;}
+    const destination=commuteDestination;
+    const label=document.createElement('span');label.textContent='Commute destination: '+destination.postcode;
+    L.circleMarker([destination.lat,destination.lng],{radius:10,color:dark?'#E0C6AD':'#003E51',fillColor:dark?'#003E51':'#fff',fillOpacity:1,weight:4}).bindTooltip(label,{permanent:true,direction:'right',className:'commute-destination-label'}).addTo(layer);
+    const points=[...items,destination].map(p=>[p.lat,p.lng] as [number,number]),key=JSON.stringify(points);
+    if(key!==framedCommute.current){const size=m.getSize();m.fitBounds(L.latLngBounds(points),{paddingTopLeft:[size.x>900?Math.min(550,size.x*.35):25,Math.min(270,size.y*.38)],paddingBottomRight:[45,65],maxZoom:14});framedCommute.current=key;}
+  },[commuteDestination,items,dark]);
   useEffect(()=>{const d=items.find(d=>d.id===selected);if(d)map.current?.flyTo([d.lat,d.lng],14,{duration:window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:.7});},[selected,dark]);
   useEffect(()=>{
     const group=lines.current;if(!group)return;group.clearLayers();if(!showLines)return;

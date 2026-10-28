@@ -1,3 +1,4 @@
+import {defaultCommute,CommuteError} from './commute.mjs';
 import {pendingInputService} from './pending-input.mjs';
 import {recordStaff,touchStaff,initializeActivity,engagementService,activityReport} from './activity.mjs';
 import {translations as defaultTranslations} from './translations.mjs';
@@ -15,7 +16,7 @@ import {fetchSource} from './sync.mjs';
 import {ConflictError,refreshPortfolio} from './netlify-store.mjs';
 const reviewedDevelopment=raw=>{try{return validateDevelopment(raw);}catch(e){throw new AccessError(e.message);}};
 const json=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
-export function createNetlifyApi({repository,password,fetchListings=fetchSource,extract=extractListing,network,connections,translations=defaultTranslations,visitorRepository,pendingOptions}){
+export function createNetlifyApi({repository,password,fetchListings=fetchSource,extract=extractListing,network,connections,translations=defaultTranslations,visitorRepository,pendingOptions,commute=defaultCommute}){
  const access=accessService(repository,password);
  const pending=pendingInputService(repository,pendingOptions);
  visitorRepository||={readDay:async date=>(await repository.read()).buyerActivityDays?.[date]||{people:{}},updateDay:async(date,change)=>repository.update(s=>{s.buyerActivityDays||={};s.buyerActivityDays[date]||={people:{}};change(s.buyerActivityDays[date]);})};
@@ -34,6 +35,11 @@ export function createNetlifyApi({repository,password,fetchListings=fetchSource,
    if(method==='POST'&&['/api/access/bootstrap','/api/access/login','/api/access/accept'].includes(route)){checkOrigin(request);if(Number(request.headers.get('content-length')||0)>10000)return json({error:'Request is too large.'},413);const text=await request.text();if(Buffer.byteLength(text)>10000)return json({error:'Request is too large.'},413);let body;try{body=JSON.parse(text);}catch{return json({error:'Request must contain valid JSON.'},400);}const action=route.split('/').pop();const result=await access[action](body);const response=json({user:result.user,csrf:result.csrf});response.headers.set('Set-Cookie',sessionCookie(result.token,request));return response;}
    if(method==='POST'&&route==='/api/access/logout'){const actor=await access.authenticate(request,{allowLegacy:false});access.csrf(request,actor);await access.logout(actor);const response=json({ok:true});response.headers.set('Set-Cookie',sessionCookie('',request,true));return response;}
    if(method==='GET'&&route.startsWith('/api/translations/')){const id=decodeURIComponent(route.slice('/api/translations/'.length)),language=url.searchParams.get('language');const d=(await repository.read()).developments.find(x=>x.id===id);if(!d)return json({error:'Development not found.'},404);if(!['ar','zh-CN','tr'].includes(language))return json({error:'Unsupported language.'},422);try{return json(await translations(d,language));}catch(e){console.error('Public listing translation failed:',e.code||e.name,e.message);return json({error:'Automatic translation is unavailable. The original English description is shown.',code:/^provider_http_\d+$/.test(e.code||'')?e.code:'translation_unavailable'},503);}}
+   if(method==='POST'&&route==='/api/commute'){
+    checkOrigin(request);const raw=await request.text();if(Buffer.byteLength(raw)>6000)return json({error:'Commute request is too large.'},413);
+    let body;try{body=JSON.parse(raw);}catch{return json({error:'Enter a valid commute request.'},400);}
+    try{return json(await commute(body,(await repository.read()).developments));}catch(e){if(e instanceof CommuteError)return json({error:e.message},e.status);return json({error:'Commute planning is temporarily unavailable. Please try again.'},503);}
+   }
    if(method==='GET'&&route==='/api/transport'){try{return json(await network());}catch{return json({error:'The TfL network is temporarily unavailable.'},503);}}
    if(method==='GET'&&route==='/api/stations'){try{return json((await network()).stations);}catch{return json({error:'The TfL station directory is temporarily unavailable.'},503);}}
    if(method==='GET'&&route.startsWith('/api/connections/')){const id=decodeURIComponent(route.slice('/api/connections/'.length));const d=(await repository.read()).developments.find(d=>d.id===id);if(!d)return json({error:'Development not found.'},404);try{return json(await connections(d));}catch{return json({error:'Station routes are temporarily unavailable.'},503);}}
