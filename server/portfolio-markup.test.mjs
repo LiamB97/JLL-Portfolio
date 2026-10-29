@@ -43,6 +43,12 @@ test('rendered buyer enquiries preserve attribution and broker screens start wit
   const Stock=(await server.ssrLoadModule('/src/Admin.tsx')).default;
   const staff={id:'qa',name:'QA',role:'admin',whatsapp:'+447900000001',shareSlug:'qa'},request=async()=>[];
   const stock=load(renderToStaticMarkup(createElement(Stock,{items:seed.developments,user:staff,request,onChange:async()=>{}})));assert.notEqual(stock('.admin-grid').attr('hidden'),undefined);assert.ok(stock('.admin-row').length>0);
+  const pending={id:'pending-demo',name:'Pending demo',version:1,data:seed.developments[0],teamNote:'',assignedTo:null,notes:[],issues:[],sourceUrls:['https://development.example'],attempts:[],status:'needs_input'};
+  const pendingEditor=load(renderToStaticMarkup(createElement(Stock,{items:[],user:staff,request,onChange:async()=>{},pending,pendingAssignees:[{id:'qa',name:'QA',role:'admin'},{id:'manager',name:'Stock Manager',role:'broker_admin'}]})));
+  assert.equal(pendingEditor('.pending-assignment-panel form button[type=submit]').text().trim(),'Save assignment & notes');
+  assert.equal(pendingEditor('.pending-assignment-panel select option').length,3);
+  assert.ok(pendingEditor('.admin-page').html().indexOf('pending-assignment-panel')<pendingEditor('.admin-page').html().indexOf('pending-review-panel'));
+  assert.ok(pendingEditor('.draft-actions button').first().text().includes('Save development draft'));
   const Collections=(await server.ssrLoadModule('/src/StaffCollections.tsx')).default;
   const collections=load(renderToStaticMarkup(createElement(Collections,{items:seed.developments,request})));assert.notEqual(collections('.collection-form-panel').attr('hidden'),undefined);assert.equal(collections('.collection-saved-panel').attr('hidden'),undefined);
   const Home=(await server.ssrLoadModule('/src/StaffHome.tsx')).default;

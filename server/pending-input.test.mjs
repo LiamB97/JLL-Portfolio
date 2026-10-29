@@ -23,3 +23,33 @@ test('a disabled or demoted manager cannot commit an in-flight pending update',a
 test('preparation is cached, does not fetch known existing entries, and keeps failed sources in the queue',async()=>{let cache=null,fetches=0,written;const list=[sampleRequest,{...sampleRequest,row:2},{...sampleRequest,row:3,existingId:'known'}],config={requests:list,readCache:async()=>cache,saveCache:async(_,value)=>cache=value,writePrepared:async value=>written=value,collect:async request=>{fetches++;if(request.row===2)throw Error('Website blocked imports');return {row:request.row,data:{name:'Chelsea Waterfront'},sourceStatus:'read'};}};await preparePendingBatch(config);assert.equal(fetches,2);assert.equal(written.items.length,2);assert.equal(written.items.find(i=>i.row===2).sourceStatus,'unavailable');await preparePendingBatch(config);assert.equal(fetches,2);assert.ok(!('developments'in written));});
 
 test('known source pitfalls are explicitly flagged without inventing prices or locations',async()=>{const d=curatePendingSource({...sampleRequest,row:34,url:'https://www.taylorwimpey.co.uk/coronation-square'},{...samples[0],priceFrom:96250,postcode:'HP10 9AS',images:[photo],sample:false});assert.equal(d.priceFrom,null);assert.equal(d.postcode,'E10 5UJ');const pen=curatePendingSource({...sampleRequest,row:6},{...samples[0],postcode:'SE10 0ER',images:[photo]});assert.equal(pen.lat,null);assert.equal(pen.postcode,'');const queued=await collectPendingSource({...sampleRequest,row:18},{extract:async()=>{throw Error('Source blocks access');},locate:async()=>{throw Error('Unexpected lookup');}});assert.equal(queued.sourceStatus,'unavailable');assert.equal(queued.data.priceFrom,null);assert.equal(queued.data.lat,null);});
+
+
+test('assignment-only saves persist, can be reassigned or cleared, and retain incomplete development data',async()=>{
+ const e=await env(),manager=await e.colleague('broker_admin','assignment-manager@example.test');
+ const original=(await e.call('admin/pending-input/sales-team-2026-10-1',undefined,e.auth)).data;
+ const draft=await e.call('admin/pending-input/'+original.id,{version:original.version,data:{...original.data,description:'Unfinished team copy',lat:null,images:[]}},e.auth,'PUT');
+ assert.equal(draft.status,200);assert.equal(draft.data.status,'needs_input');
+ const saved=await e.call('admin/pending-input/'+original.id,{version:draft.data.version,assignedTo:manager.data.user.id,teamNote:'  Ask for new photos.  '},e.auth,'PUT');
+ assert.equal(saved.status,200);assert.deepEqual(saved.data.data,draft.data.data);assert.equal(saved.data.assignedTo,manager.data.user.id);assert.equal(saved.data.teamNote,'Ask for new photos.');assert.equal(saved.data.status,'needs_input');
+ const reopened=(await e.call('admin/pending-input/'+original.id,undefined,manager)).data;
+ assert.equal(reopened.assignedTo,manager.data.user.id);assert.equal(reopened.teamNote,'Ask for new photos.');assert.deepEqual(reopened.data,draft.data.data);
+ const report=(await e.call('admin/pending-input',undefined,e.auth)).data;assert.equal(report.entries[0].assignedTo,manager.data.user.id);assert.equal(report.entries[0].assigneeName,manager.data.user.name);
+ const reassigned=await e.call('admin/pending-input/'+original.id,{version:saved.data.version,assignedTo:e.auth.data.user.id},manager,'PUT');assert.equal(reassigned.status,200);assert.equal(reassigned.data.assignedTo,e.auth.data.user.id);assert.equal(reassigned.data.teamNote,'Ask for new photos.');
+ const cleared=await e.call('admin/pending-input/'+original.id,{version:reassigned.data.version,assignedTo:null,teamNote:''},e.auth,'PUT');assert.equal(cleared.status,200);assert.equal(cleared.data.assignedTo,null);assert.equal(cleared.data.teamNote,'');assert.deepEqual(cleared.data.data,draft.data.data);assert.deepEqual((await e.call('developments')).data,[]);
+});
+
+test('assignment-only saves reject invalid assignees, stale edits and unauthorised roles without partial writes',async()=>{
+ const e=await env(),manager=await e.colleague('broker_admin','target-manager@example.test'),broker=await e.colleague('broker','ineligible-broker@example.test');
+ const original=(await e.call('admin/pending-input/sales-team-2026-10-1',undefined,e.auth)).data,path='admin/pending-input/'+original.id;
+ for(const assignedTo of [broker.data.user.id,'missing',42,'']){
+  assert.equal((await e.call(path,{version:original.version,assignedTo,teamNote:'Must not persist'},e.auth,'PUT')).status,422);
+  assert.deepEqual((await e.call(path,undefined,e.auth)).data,original);
+ }
+ for(const body of [null,[],{version:original.version},{version:original.version,data:null,assignedTo:manager.data.user.id}])assert.equal((await e.call(path,body,e.auth,'PUT')).status,422);
+ assert.equal((await e.call(path,{version:original.version,assignedTo:manager.data.user.id},broker,'PUT')).status,403);
+ const saved=await e.call(path,{version:original.version,assignedTo:e.auth.data.user.id},e.auth,'PUT');assert.equal(saved.status,200);
+ assert.equal((await e.call(path,{version:original.version,assignedTo:manager.data.user.id,teamNote:'Stale edit'},e.auth,'PUT')).status,409);assert.deepEqual((await e.call(path,undefined,e.auth)).data,saved.data);
+ await e.call('admin/users/'+manager.data.user.id,{active:false},e.auth,'PATCH');
+ assert.equal((await e.call(path,{version:saved.data.version,assignedTo:manager.data.user.id},e.auth,'PUT')).status,422);assert.deepEqual((await e.call(path,undefined,e.auth)).data,saved.data);
+});

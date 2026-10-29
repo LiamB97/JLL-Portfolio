@@ -7,8 +7,8 @@ Open **Manage → Pending input**. Admins and Broker admins can use this shared 
 Each unpublished item includes the available source facts, image/video URLs, original links, missing-field checklist, review notes, extraction history and an assignee. Recoverable information from the 27 October 2026 source review prepopulates 43 requests even if their sites cannot currently be read. Historical facts are explicitly labelled for confirmation; no pricing or availability is guaranteed by an import. The Netlify build plugin attempts the remaining source extraction before bundling, stores candidates only in the private server bundle, and caches the intake snapshot across builds. It does not put raw candidates in public assets or publish developments.
 
 1. Search or filter the queue, including **Assigned to me**.
-2. Open **Complete entry**. Assign an active Admin or Broker admin and leave team notes.
-3. Fill the missing facts and inspect the photographs. **Save draft** preserves the shared work and updates the checklist. A stale save returns a conflict rather than overwriting another person's changes.
+2. Open **Complete entry**. Choose an active Admin or Broker admin, leave team notes and click **Save assignment & notes** at the top.
+3. Fill the missing facts and inspect the photographs. **Save development draft** preserves the shared work and updates the checklist. A stale save returns a conflict rather than overwriting another person's changes.
 4. Use **Read source again** after saving if needed. This fills empty saved fields only. Failed source attempts remain visible, with manual entry available.
 5. Check any postcode-derived pin against the map link and confirm the exact position. Confirm full-market starting price, bedroom options, property types, description, amenities, availability, media rights and removal of third-party contact details/branding.
 6. Tick the review checkbox and **Publish to portfolio**. Incomplete records, unchecked postcode-centre pins and duplicates are rejected. Published work keeps its new development ID in the queue for reference.
@@ -26,3 +26,10 @@ In Manage → Buyer collections, enable TfL lines and/or stations under **Set th
 Personal links do not use transport defaults. Previously saved personal defaults are ignored. Collections without saved defaults open with transport overlays off. Collection settings remain independent of the owning broker's personal profile.
 
 Collection maps frame the featured developments together with explicitly selected stations when Show stations is enabled. Full routes and automatically included stops do not affect the opening view. If transport data arrives after the developments, the framing updates once those selected stations are available.
+
+
+### Save assignments separately
+
+Open a pending entry and use **Assignment & team notes** at the top. Choose an active Admin or Broker admin, then click **Save assignment & notes**. The confirmation names the saved assignee. Selecting **Unassigned** and saving clears the assignment.
+
+This action saves assignment and team notes without saving development field changes or publishing the entry. **Save development draft** further down saves the development form as well. Both actions retain the existing permission checks and reject stale versions rather than overwriting a teammate’s work.
