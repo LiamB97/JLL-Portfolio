@@ -16,7 +16,15 @@ import type {Development, TransportNetwork, TransportDefaults} from './types';
 maplibregl.setWorkerUrl(maplibreWorkerUrl);
 const osmAttribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 const vectorAttribution='<a href="https://openfreemap.org">OpenFreeMap</a> · &copy; <a href="https://openmaptiles.org">OpenMapTiles</a>';
-const frameOptions:L.FitBoundsOptions={paddingTopLeft:[24,24],paddingBottomRight:[24,84],maxZoom:14};
+function frameOptions(m:L.Map):L.FitBoundsOptions{
+ // Read the actual overlay bounds, so framing also fits translated controls and
+ // short landscape viewports. Desktop and Split controls remain in normal flow.
+ const toolbar=m.getContainer().closest('.discovery-page')?.querySelector<HTMLElement>('.discovery-toolbar');
+ const overlay=toolbar&&getComputedStyle(toolbar).position==='absolute';
+ const top=overlay?Math.max(24,toolbar.getBoundingClientRect().bottom-m.getContainer().getBoundingClientRect().top+16):24;
+ const size=m.getSize();
+ return {paddingTopLeft:[24,Math.min(top,size.y*.45)],paddingBottomRight:[24,Math.min(84,size.y*.25)],maxZoom:14};
+}
 
 function stationPopup(station:TransportNetwork['stations'][number], network:TransportNetwork) {
   const popup=document.createElement('div');popup.className='transport-popup';
@@ -107,7 +115,7 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
     render();m.on('moveend',render);return()=>{m.off('moveend',render);};
   },[showLandmarks,dark]);
   const framedFavourites=useRef(false);
-  useEffect(()=>{if(!favouritesOnly){framedFavourites.current=false;return;}if(framedFavourites.current||!items.length||!map.current)return;map.current.fitBounds(L.latLngBounds(items.map(d=>[d.lat,d.lng] as [number,number])),frameOptions);framedFavourites.current=true;},[favouritesOnly,items,dark]);
+  useEffect(()=>{if(!favouritesOnly){framedFavourites.current=false;return;}if(framedFavourites.current||!items.length||!map.current)return;map.current.fitBounds(L.latLngBounds(items.map(d=>[d.lat,d.lng] as [number,number])),frameOptions(map.current));framedFavourites.current=true;},[favouritesOnly,items,dark]);
   const framedCollection=useRef('');
   useEffect(()=>{
     if(favouritesOnly||commuteDestination)return;
@@ -126,7 +134,7 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
     const m=map.current;
     if(m){
 
-      m.fitBounds(L.latLngBounds(points),frameOptions);
+      m.fitBounds(L.latLngBounds(points),frameOptions(m));
       framedCollection.current=key;
     }
   },[featuredIds,items,network,transportDefaults,dark,favouritesOnly,commuteDestination]);
@@ -138,7 +146,7 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
     const label=document.createElement('span');label.textContent='Commute destination: '+destination.postcode;
     L.circleMarker([destination.lat,destination.lng],{radius:10,color:dark?'#E0C6AD':'#003E51',fillColor:dark?'#003E51':'#fff',fillOpacity:1,weight:4}).bindTooltip(label,{permanent:true,direction:'right',className:'commute-destination-label'}).addTo(layer);
     const points=[...items,destination].map(p=>[p.lat,p.lng] as [number,number]),key=JSON.stringify(points);
-    if(key!==framedCommute.current){m.fitBounds(L.latLngBounds(points),frameOptions);framedCommute.current=key;}
+    if(key!==framedCommute.current){m.fitBounds(L.latLngBounds(points),frameOptions(m));framedCommute.current=key;}
   },[commuteDestination,items,dark]);
   useEffect(()=>{const d=items.find(d=>d.id===selected);if(d)map.current?.flyTo([d.lat,d.lng],14,{duration:window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:.7});},[selected,dark]);
   useEffect(()=>{
@@ -158,7 +166,7 @@ export default function PortfolioMap({items, selected, onSelect, network, transp
   },[showStations,network,lineFilter,stationFilter,dark]);
   return <div className="map-shell" data-map-ready={baseReady}>{!baseReady&&<div className="map-loading-indicator" role="status">{t("Loading London map…")}</div>}<div ref={el} className="map" aria-label={t("Map of London developments")}/>
     <div className="map-utilities"><button className="map-layer-button" aria-haspopup="dialog" aria-expanded={toolsOpen} onClick={()=>setToolsOpen(true)}><SlidersHorizontal size={16}/>{t('Map layers')}{(showLines||showStations||showLandmarks)&&<span className="layer-count">{[showLines,showStations,showLandmarks].filter(Boolean).length}</span>}</button>
-    <button className="map-fit-button" aria-label={t('Show matching homes')} title={t('Show matching homes')} disabled={!items.length} onClick={()=>{const m=map.current;if(!m||!items.length)return;m.fitBounds(L.latLngBounds([...items,...(commuteDestination?[commuteDestination]:[])].map(d=>[d.lat,d.lng] as [number,number])),frameOptions);}}><LocateFixed size={19}/><span>{t('Show matching homes')}</span></button>
+    <button className="map-fit-button" aria-label={t('Show matching homes')} title={t('Show matching homes')} disabled={!items.length} onClick={()=>{const m=map.current;if(!m||!items.length)return;m.fitBounds(L.latLngBounds([...items,...(commuteDestination?[commuteDestination]:[])].map(d=>[d.lat,d.lng] as [number,number])),frameOptions(m));}}><LocateFixed size={19}/><span>{t('Show matching homes')}</span></button>
     </div>
     {toolsOpen&&<Modal title={t('Map layers')} close={()=>setToolsOpen(false)} className="map-layers-dialog" footer={<button onClick={()=>{setShowLines(false);setShowStations(false);setShowLandmarks(false);setLineFilter([]);setStationFilter([]);}}>{t('Hide all layers')}</button>}>
       <p className="muted">{t('Keep the focus on homes, or add local context to your map.')}</p>

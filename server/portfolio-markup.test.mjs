@@ -21,6 +21,9 @@ test('rendered buyer enquiries preserve attribution and broker screens start wit
   assert.equal(header('.portfolio-views button[aria-pressed=true]').attr('aria-label'),'Split');
   assert.equal(header('.portfolio-header .friend-share-trigger,.portfolio-header .preferences-toggle').length,0);
   assert.equal(header('.portfolio-header-title').text(),'London New Homes Portfolio');
+  const linkedHeader=load(renderToStaticMarkup(createElement(Header,{...headerProps,broker:{name:'Test Broker',slug:'owner-link',whatsapp:'+447900000001'}})));
+  const brokerContact=new URL(linkedHeader('.portfolio-mobile-broker').attr('href'));
+  assert.equal(brokerContact.pathname,'/447900000001');assert.ok(brokerContact.searchParams.get('text').includes('collection=chosen'));assert.equal(linkedHeader('.portfolio-mobile-broker').attr('aria-label'),'WhatsApp Test Broker');
   const staffHeader=load(renderToStaticMarkup(createElement(Header,{...headerProps,exploring:false,staff:true})));
   assert.equal(staffHeader('.portfolio-header-buttons>button').length,1);assert.equal(staffHeader('.portfolio-views').length,0);
   const Preferences=(await server.ssrLoadModule('/src/Preferences.tsx')).default;

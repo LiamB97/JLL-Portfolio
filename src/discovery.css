@@ -25,7 +25,7 @@
 .portfolio-inline-preferences p{font-size:12px;color:var(--muted);margin:0}
 .portfolio-menu-links{display:grid;gap:5px}
 .portfolio-menu-links a{display:flex;align-items:center;gap:12px;min-height:46px;padding:10px;border-radius:5px;font-size:15px}
-/* The toolbar is in normal flow. It cannot cover map pins or controls. */
+/* Desktop and listing controls stay in normal flow; mobile Map uses a light overlay. */
 .discovery-page{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;background:var(--page)}
 .discovery-toolbar{display:grid;grid-template-columns:minmax(240px,1fr) minmax(220px,320px) auto;gap:10px 16px;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--line);flex-shrink:0;position:relative;z-index:1000}
 .discovery-search{display:flex;align-items:center;gap:10px;min-width:0;height:48px;padding:4px 5px 4px 13px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--muted)}
@@ -121,3 +121,32 @@
 .discovery-disclaimer{padding-block-end:max(4px,env(safe-area-inset-bottom))}
 
 .activity-advanced{grid-column:1/-1;border-top:1px solid var(--line);padding-top:8px}.activity-advanced summary{min-height:44px;align-content:center;cursor:pointer;font-size:14px}.activity-advanced summary span{font-size:12px;color:var(--accent)}.activity-advanced-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding-top:12px}@media(max-width:760px){.activity-advanced-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* On phones, prioritise the map canvas over persistent navigation rows. */
+.portfolio-mobile-broker,.portfolio-mobile-view-picker,.portfolio-mobile-context{display:none}
+.portfolio-menu-view-options{display:flex;gap:8px}
+.portfolio-menu-view-options button{flex:1;min-width:0;min-height:44px;padding:10px 8px;font-size:14px}
+.portfolio-menu-view-options button[aria-pressed=true]{background:var(--selected-bg);color:var(--accent);border-color:var(--accent)}
+.portfolio-mobile-context p{font-size:13px;color:var(--muted);margin:0 0 16px}
+.filter-collection-context{margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.filter-collection-context strong{display:flex;align-items:center;gap:8px;overflow-wrap:anywhere}
+.filter-collection-context p{font-size:13px;color:var(--muted);margin:8px 0 0}
+@media(max-width:760px){
+ .portfolio-header,.portfolio-header:not(.with-views),.portfolio-header.with-views{grid-template-rows:56px}
+ .portfolio-header-brand{width:160px}
+ .portfolio-header>.portfolio-views{display:none}
+ .portfolio-mobile-view-picker,.portfolio-mobile-context{display:block}
+ .portfolio-header-buttons>.portfolio-mobile-broker{display:flex;align-items:center;justify-content:center;width:44px;height:44px;flex-shrink:0;background:#25d366;color:#071e18;border-radius:50%;padding:6px}
+ .portfolio-mobile-broker img{display:block;width:32px;height:32px;object-fit:cover;border-radius:50%}
+ .discovery-page.view-map{position:relative}
+ .discovery-page.view-map>.discovery-toolbar{position:absolute;inset:0 0 auto;grid-template-columns:minmax(118px,max-content) minmax(0,1fr);padding:10px 12px;background:transparent;border:0;pointer-events:none;gap:8px}
+ .discovery-page.view-map>.discovery-toolbar>*{pointer-events:auto}
+ .discovery-page.view-map .discovery-search{background:var(--surface);box-shadow:0 2px 10px #0002;height:48px}
+ .discovery-page.view-map .discovery-toolbar>.commute-search{justify-self:start;width:auto;max-width:100%;background:var(--surface);box-shadow:0 2px 8px #0001;overflow:hidden}
+ .discovery-page.view-map .commute-search-trigger{min-height:44px;padding:9px 11px;gap:7px}
+ .discovery-page.view-map .discovery-count{align-self:center;justify-self:end;flex-wrap:wrap;max-width:100%;background:var(--surface);padding:2px 8px;min-height:36px;border:1px solid var(--line);border-radius:6px;font-size:11px;box-shadow:0 2px 8px #0001}
+ .discovery-page.view-map .discovery-count button{min-height:40px;padding:6px;font-size:11px}
+ .discovery-page.view-map .discovery-collection,.discovery-page.view-map .discovery-broker{display:none}
+ .discovery-page.view-map .discovery-toolbar>.explorer-message{max-height:150px;overflow:auto;overscroll-behavior:contain}
+ .discovery-page.view-map .discovery-workspace{min-height:0}
+}

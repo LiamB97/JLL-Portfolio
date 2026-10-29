@@ -68,3 +68,15 @@ The next set of screenshots exposed remaining problems in the old header and the
 | A source push was the only recorded publication evidence | The build emits release.json containing only the commit and build time | Check the public deployment against the intended commit. |
 
 Obsolete header/map layout rules were removed, while shared dark-theme selectors were preserved. Keyboard access, broker/collection attribution and the staff role model remain covered by automated checks. Native Safari layout and phone interactions are still not verified while Browser use is disabled.
+
+
+## Mobile map space — 29 October
+
+| Before | After | Why |
+| --- | --- | --- |
+| A separate mobile Map/Split/List row | View choices inside the menu; a single 56px header | Give the map another 60px of vertical space. Desktop view controls stay in the navigation. |
+| Search, commute and broker strips consumed page height | Search and small commute/result chips float over the mobile Map canvas | The map fills the space directly beneath the header. List and Split keep their controls in normal flow. |
+| Full-width broker contact strip | A 44px circular broker contact in the mobile header; full name and collection context in the menu | Keep broker contact one tap away. Broker and collection attribution is retained in its WhatsApp message. |
+| Fixed map framing margins | Margins read the actual floating toolbar bounds | Keep automatic collection/commute framing and Show matching homes clear of the search controls. |
+
+Build and regression verification cover source and rendered markup. Browser testing still reports that local browser use is disabled; no phone visual verification is claimed.
