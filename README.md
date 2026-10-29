@@ -1,5 +1,7 @@
 # JLL London residential portfolio
 
+For work-account transfer and Claude continuation, read [CLAUDE.md](CLAUDE.md) and [the work handover](docs/work-handover.md).
+
 A first working prototype: one shared, London-only portfolio for brokers to send to buyers. React/TypeScript + Vite, Leaflet + MapLibre vector map, Express API and persistent SQLite storage. No buyer accounts or enquiry forms. Destinations entered in development details are not saved in the portfolio database. Optional GA4 usage analytics requires visitor consent.
 
 ## Run
