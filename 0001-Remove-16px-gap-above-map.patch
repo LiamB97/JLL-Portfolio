@@ -1,0 +1,29 @@
+From a4f70dfb6154e2bc155ca9e6e92bbf4d46de9019 Mon Sep 17 00:00:00 2001
+From: "Claude (claude.ai)" <noreply@anthropic.com>
+Date: Thu, 29 Oct 2026 14:15:22 +0000
+Subject: [PATCH] Remove 16px gap above map
+
+The legacy .map-shell rule (position:sticky; top:16px) still applied its
+top offset after .discovery-page .map-shell switched to position:relative,
+pushing the map down 16px on desktop, tablet and Split view and exposing the
+page background above it. Reset top:0 so the map sits flush under the toolbar.
+---
+ src/discovery.css | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/discovery.css b/src/discovery.css
+index 9935a9f..500adbd 100644
+--- a/src/discovery.css
++++ b/src/discovery.css
+@@ -53,7 +53,7 @@
+ .discovery-broker strong{color:#071e18;overflow-wrap:anywhere}
+ .discovery-toolbar>.explorer-message{grid-column:1/-1;margin:0;box-shadow:none}
+ .discovery-workspace{display:grid;grid-template-columns:minmax(0,1fr);flex:1;min-height:0;position:relative}
+-.discovery-page .map-shell{grid-column:1;grid-row:1;position:relative;width:100%;height:100%;min-height:0;border-radius:0}
++.discovery-page .map-shell{grid-column:1;grid-row:1;position:relative;top:0;width:100%;height:100%;min-height:0;border-radius:0}
+ .discovery-page .map{width:100%;height:100%}
+ .discovery-page.view-split .discovery-workspace{grid-template-columns:minmax(320px,34%) minmax(0,1fr)}
+ .discovery-page.view-split .map-shell{grid-column:2}
+-- 
+2.43.0
+
